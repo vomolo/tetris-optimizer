@@ -52,7 +52,7 @@ func validateStructure(fullPath string) error {
 	return nil
 }
 
-// validateContent checks the file content rules
+// validateContent checks the file content rules with strict character and length validation
 func validateContent(fullPath string) error {
 	file, err := os.Open(fullPath)
 	if err != nil {
@@ -72,25 +72,32 @@ func validateContent(fullPath string) error {
 	for scanner.Scan() {
 		lineCount++
 		line := scanner.Bytes()
+		trimmedLine := bytes.TrimSpace(line)
 
 		// Validate all characters in the line
 		for _, char := range line {
-			if char != '#' && char != '.' && char != '\n' && char != '\r' {
+			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
 				return newValidationError("invalid character '%c' in line %d - only '#' and '.' are allowed", char, lineCount)
 			}
 		}
 
 		// Every 5th line must be empty (separator between tetrominoes)
 		if lineCount%5 == 0 {
-			if len(bytes.TrimSpace(line)) > 0 {
+			if len(trimmedLine) > 0 {
 				return newValidationError("line %d must be empty (separator line)", lineCount)
 			}
 			continue // Skip further checks for separator lines
 		}
 
-		// For non-separator lines, ensure they're not empty
-		if len(bytes.TrimSpace(line)) == 0 {
+		// For non-separator lines
+		if len(trimmedLine) == 0 {
 			return newValidationError("line %d cannot be empty (contains tetromino data)", lineCount)
+		}
+
+		// Strict 4-character check for non-empty lines
+		if len(trimmedLine) != 4 {
+			return newValidationError("line %d must have exactly 4 characters (found %d: %q)",
+				lineCount, len(trimmedLine), trimmedLine)
 		}
 
 		// Mark that we've found content
