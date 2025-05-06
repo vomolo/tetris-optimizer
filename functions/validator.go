@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	tetrisDir = "tetris_files"  // The required directory
+	tetrisDir = "tetris_files" // The required directory
 	minLines  = 4
 )
 
@@ -43,7 +43,7 @@ func validateStructure(fullPath string) error {
 	// Verify file exists
 	if _, err := os.Stat(absPath); err != nil {
 		if os.IsNotExist(err) {
-			return newValidationError("file '%s' does not exist in %s directory", 
+			return newValidationError("file '%s' does not exist in %s directory",
 				filepath.Base(fullPath), tetrisDir)
 		}
 		return newValidationError("file access error: %v", err)
@@ -52,7 +52,7 @@ func validateStructure(fullPath string) error {
 	return nil
 }
 
-// validateContent checks the file content rules (unchanged)
+// validateContent checks the file content rules
 func validateContent(fullPath string) error {
 	file, err := os.Open(fullPath)
 	if err != nil {
@@ -73,15 +73,30 @@ func validateContent(fullPath string) error {
 		lineCount++
 		line := scanner.Bytes()
 
-		if lineCount%5 == 0 && len(bytes.TrimSpace(line)) > 0 {
-			return newValidationError("line %d must be empty", lineCount)
+		// Validate all characters in the line
+		for _, char := range line {
+			if char != '#' && char != '.' && char != '\n' && char != '\r' {
+				return newValidationError("invalid character '%c' in line %d - only '#' and '.' are allowed", char, lineCount)
+			}
 		}
 
-		if !hasContent && len(bytes.TrimSpace(line)) > 0 {
+		// Every 5th line must be empty (separator between tetrominoes)
+		if lineCount%5 == 0 {
+			if len(bytes.TrimSpace(line)) > 0 {
+				return newValidationError("line %d must be empty (separator line)", lineCount)
+			}
+			continue // Skip further checks for separator lines
+		}
+
+		// For non-separator lines, ensure they're not empty
+		if len(bytes.TrimSpace(line)) == 0 {
+			return newValidationError("line %d cannot be empty (contains tetromino data)", lineCount)
+		}
+
+		// Mark that we've found content
+		if !hasContent {
 			hasContent = true
 		}
-
-		
 	}
 
 	if err := scanner.Err(); err != nil {
