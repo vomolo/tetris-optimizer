@@ -81,9 +81,7 @@ func validateContent(fullPath string) error {
 			hasContent = true
 		}
 
-		if lineCount >= minLines && hasContent {
-			break
-		}
+		
 	}
 
 	if err := scanner.Err(); err != nil {
