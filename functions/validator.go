@@ -65,8 +65,10 @@ func validateContent(fullPath string) error {
 	scanner.Buffer(buf, cap(buf))
 
 	var (
-		lineCount  int
-		hasContent bool
+		lineCount    int
+		blockLines   []string
+		hasContent   bool
+		blockCounter int
 	)
 
 	for scanner.Scan() {
@@ -86,7 +88,14 @@ func validateContent(fullPath string) error {
 			if len(trimmedLine) > 0 {
 				return newValidationError("line %d must be empty (separator line)", lineCount)
 			}
-			continue // Skip further checks for separator lines
+
+			// Validate the completed block
+			if err := validateTetrominoBlock(blockLines, blockCounter+1); err != nil {
+				return err
+			}
+			blockLines = blockLines[:0] // Reset block
+			blockCounter++
+			continue
 		}
 
 		// For non-separator lines
@@ -100,14 +109,20 @@ func validateContent(fullPath string) error {
 				lineCount, len(trimmedLine), trimmedLine)
 		}
 
-		// Mark that we've found content
-		if !hasContent {
-			hasContent = true
-		}
+		// Add to current block
+		blockLines = append(blockLines, string(trimmedLine))
+		hasContent = true
 	}
 
 	if err := scanner.Err(); err != nil {
 		return newValidationError("file read error: %v", err)
+	}
+
+	// Check the last block if there was no trailing separator
+	if len(blockLines) > 0 {
+		if err := validateTetrominoBlock(blockLines, blockCounter+1); err != nil {
+			return err
+		}
 	}
 
 	if !hasContent {
@@ -119,6 +134,88 @@ func validateContent(fullPath string) error {
 	}
 
 	return nil
+}
+
+// validateTetrominoBlock checks if a 4-line block contains exactly one valid tetromino
+func validateTetrominoBlock(block []string, blockNumber int) error {
+	if len(block) != 4 {
+		return newValidationError("block %d must have exactly 4 lines (found %d)", blockNumber, len(block))
+	}
+
+	// Count the number of '#' characters
+	var hashCount int
+	for _, line := range block {
+		for _, char := range line {
+			if char == '#' {
+				hashCount++
+			}
+		}
+	}
+
+	if hashCount != 4 {
+		return newValidationError("block %d must contain exactly 4 '#' characters (found %d)", blockNumber, hashCount)
+	}
+
+	// Convert block to grid for adjacency check
+	grid := make([][]rune, 4)
+	for i, line := range block {
+		grid[i] = []rune(line)
+	}
+
+	// Check if the '#' characters form a single connected tetromino
+	if !isValidTetromino(grid) {
+		return newValidationError("block %d does not form a valid tetromino", blockNumber)
+	}
+
+	return nil
+}
+
+// isValidTetromino checks if the grid contains exactly one valid tetromino
+func isValidTetromino(grid [][]rune) bool {
+	// Find first '#' to start DFS
+	var startX, startY int
+	found := false
+	for y := 0; y < 4; y++ {
+		for x := 0; x < 4; x++ {
+			if grid[y][x] == '#' {
+				startX, startY = x, y
+				found = true
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+
+	if !found {
+		return false
+	}
+
+	// Perform DFS to count connected '#' characters
+	visited := make([][]bool, 4)
+	for i := range visited {
+		visited[i] = make([]bool, 4)
+	}
+
+	count := 0
+	var dfs func(x, y int)
+	dfs = func(x, y int) {
+		if x < 0 || x >= 4 || y < 0 || y >= 4 || visited[y][x] || grid[y][x] != '#' {
+			return
+		}
+		visited[y][x] = true
+		count++
+		dfs(x+1, y)
+		dfs(x-1, y)
+		dfs(x, y+1)
+		dfs(x, y-1)
+	}
+
+	dfs(startX, startY)
+
+	// All '#' should be connected
+	return count == 4
 }
 
 func newValidationError(format string, args ...interface{}) error {
