@@ -12,10 +12,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := functions.Validate(os.Args[1]); err != nil {
+	// Get both the formatted output and validation error
+	output, err := functions.Validate(os.Args[1])
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Validation error: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("File is valid and optimized for processing")
+	// Print the formatted output with letter replacements
+	fmt.Println("Valid tetromino configuration:")
+	fmt.Print(output)
 }
