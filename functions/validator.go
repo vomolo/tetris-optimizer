@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 const (
@@ -12,21 +13,6 @@ const (
 	minLines  = 4
 )
 
-type ValidationError struct {
-	message string
-}
-
-func (e *ValidationError) Error() string {
-	return e.message
-}
-
-func newValidationError(format string, args ...interface{}) error {
-	return &ValidationError{
-		message: fmt.Sprintf(format, args...),
-	}
-}
-
-// Validate checks the tetromino file and returns formatted output with letters
 func Validate(filename string) (string, error) {
 	fullPath := filename
 	if filepath.Dir(filename) != tetrisDir {
@@ -36,7 +22,7 @@ func Validate(filename string) (string, error) {
 	if err := validateStructure(fullPath); err != nil {
 		return "", err
 	}
-	return validateAndPrintContent(fullPath)
+	return validateAndSolveContent(fullPath)
 }
 
 func validateStructure(fullPath string) error {
@@ -54,7 +40,7 @@ func validateStructure(fullPath string) error {
 	return nil
 }
 
-func validateAndPrintContent(fullPath string) (string, error) {
+func validateAndSolveContent(fullPath string) (string, error) {
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		return "", newValidationError("failed to read file: %v", err)
@@ -71,35 +57,34 @@ func validateAndPrintContent(fullPath string) (string, error) {
 		blockIndex   int
 		hasContent   bool
 		blockCounter int
-		output       bytes.Buffer
+		tetrominos   []*Tetromino
 	)
 
 	for _, line := range lines {
 		lineCount++
 		trimmed := bytes.TrimSpace(line)
 
-		// Validate characters
 		for _, char := range line {
 			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
 				return "", newValidationError("invalid character '%c' in line %d", char, lineCount)
 			}
 		}
 
-		// Handle separator lines
 		if lineCount%5 == 0 {
 			if len(trimmed) > 0 {
 				return "", newValidationError("line %d must be empty", lineCount)
 			}
 
-			if err := processBlock(blockLines[:], blockCounter, &output); err != nil {
+			tetromino, err := validateAndCreateTetromino(blockLines[:], blockCounter)
+			if err != nil {
 				return "", err
 			}
+			tetrominos = append(tetrominos, tetromino)
 			blockIndex = 0
 			blockCounter++
 			continue
 		}
 
-		// Validate tetromino lines
 		if len(trimmed) == 0 {
 			return "", newValidationError("line %d cannot be empty", lineCount)
 		}
@@ -115,11 +100,12 @@ func validateAndPrintContent(fullPath string) (string, error) {
 		hasContent = true
 	}
 
-	// Check last block if no trailing separator
 	if blockIndex > 0 {
-		if err := processBlock(blockLines[:blockIndex], blockCounter, &output); err != nil {
+		tetromino, err := validateAndCreateTetromino(blockLines[:blockIndex], blockCounter)
+		if err != nil {
 			return "", err
 		}
+		tetrominos = append(tetrominos, tetromino)
 	}
 
 	if !hasContent {
@@ -128,59 +114,174 @@ func validateAndPrintContent(fullPath string) (string, error) {
 	if lineCount < minLines {
 		return "", newValidationError("file must have at least %d lines", minLines)
 	}
-	return output.String(), nil
+
+	return SolveTetrominos(tetrominos)
 }
 
-func processBlock(block [][]byte, blockNumber int, output *bytes.Buffer) error {
+func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, error) {
 	if len(block) != 4 {
-		return newValidationError("block must have 4 lines (found %d)", len(block))
+		return nil, newValidationError("block must have 4 lines (found %d)", len(block))
 	}
 
 	var (
-		hashCount int
-		shape     uint16
+		hashCount  int
+		points     []Point
+		minX, maxX = 3, 0
+		minY, maxY = 3, 0
 	)
 
-	// Count hashes and build shape
 	for y, line := range block {
 		for x, char := range line {
 			if char == '#' {
 				hashCount++
-				shape |= 1 << uint(y*4+x)
+				points = append(points, Point{X: x, Y: y})
+				if x < minX {
+					minX = x
+				}
+				if x > maxX {
+					maxX = x
+				}
+				if y < minY {
+					minY = y
+				}
+				if y > maxY {
+					maxY = y
+				}
 			}
 		}
 	}
 
 	if hashCount != 4 {
-		return newValidationError("block must have exactly 4 '#' (found %d)", hashCount)
+		return nil, newValidationError("block must have exactly 4 '#' (found %d)", hashCount)
 	}
 
-	// Check if valid tetromino
-	validShapes := map[uint16]bool{
-		0xF000: true, 0x1111: true, 0xCC00: true,
-		0xE400: true, 0x4C40: true, 0x4E00: true, 0x8C80: true,
-		0xE800: true, 0xC440: true, 0x2E00: true, 0x88C0: true,
-		0xE200: true, 0x44C0: true, 0x8E00: true, 0xC880: true,
-		0x6C00: true, 0x8C40: true, 0xC600: true, 0x4C80: true,
+	for i := range points {
+		points[i].X -= minX
+		points[i].Y -= minY
 	}
 
-	if !validShapes[shape] {
-		return newValidationError("block is not a valid tetromino")
+	return &Tetromino{
+		Points: points,
+		Letter: 'A' + rune(blockNumber),
+		Width:  maxX - minX + 1,
+		Height: maxY - minY + 1,
+	}, nil
+}
+
+func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
+	minSize := 2
+	for minSize*minSize < len(tetrominos)*4 {
+		minSize++
 	}
 
-	// Replace # with corresponding letter and print
-	letter := 'A' + rune(blockNumber)
-	for _, line := range block {
-		for _, char := range line {
-			if char == '#' {
-				output.WriteRune(letter)
-			} else {
-				output.WriteByte(char)
+	sort.Slice(tetrominos, func(i, j int) bool {
+		return tetrominos[i].Width*tetrominos[i].Height >
+			tetrominos[j].Width*tetrominos[j].Height
+	})
+
+	for size := minSize; size <= minSize+5; size++ {
+		board := NewBoard(size)
+		if solution, solved := solve(tetrominos, 0, board); solved {
+			return boardToString(solution), nil
+		}
+	}
+
+	return "", fmt.Errorf("no solution found")
+}
+
+func solve(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
+	if index == len(tetrominos) {
+		return board, true
+	}
+
+	current := tetrominos[index]
+	rotations := generateRotations(current)
+
+	for _, rot := range rotations {
+		for y := 0; y <= board.Size-rot.Height; y++ {
+			for x := 0; x <= board.Size-rot.Width; x++ {
+				if board.canPlace(rot, x, y) {
+					board.place(rot, x, y)
+					if solution, solved := solve(tetrominos, index+1, board); solved {
+						return solution, true
+					}
+					board.remove(rot, x, y)
+				}
 			}
 		}
-		output.WriteByte('\n')
 	}
-	output.WriteByte('\n') // Add separator after each block
 
-	return nil
+	return nil, false
+}
+
+func generateRotations(t *Tetromino) []*Tetromino {
+	rotations := []*Tetromino{t}
+
+	// Generate 3 rotations (90°, 180°, 270°)
+	for i := 0; i < 3; i++ {
+		rotated := &Tetromino{
+			Letter: t.Letter,
+			Width:  t.Height,
+			Height: t.Width,
+		}
+
+		for _, p := range rotations[len(rotations)-1].Points {
+			rotated.Points = append(rotated.Points, Point{
+				X: t.Height - 1 - p.Y,
+				Y: p.X,
+			})
+		}
+		rotations = append(rotations, rotated)
+	}
+
+	return rotations
+}
+
+func NewBoard(size int) *Board {
+	grid := make([][]rune, size)
+	for i := range grid {
+		grid[i] = make([]rune, size)
+	}
+	return &Board{Grid: grid, Size: size}
+}
+
+func (b *Board) canPlace(t *Tetromino, x, y int) bool {
+	for _, p := range t.Points {
+		nx, ny := x+p.X, y+p.Y
+		if nx >= b.Size || ny >= b.Size || b.Grid[ny][nx] != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func (b *Board) place(t *Tetromino, x, y int) {
+	for _, p := range t.Points {
+		b.Grid[y+p.Y][x+p.X] = t.Letter
+	}
+	b.Placed++
+}
+
+func (b *Board) remove(t *Tetromino, x, y int) {
+	for _, p := range t.Points {
+		b.Grid[y+p.Y][x+p.X] = 0
+	}
+	b.Placed--
+}
+
+func boardToString(b *Board) string {
+	var buf bytes.Buffer
+	for y := 0; y < b.Size; y++ {
+		for x := 0; x < b.Size; x++ {
+			if b.Grid[y][x] == 0 {
+				buf.WriteByte('.')
+			} else {
+				buf.WriteRune(b.Grid[y][x])
+			}
+		}
+		if y < b.Size-1 {
+			buf.WriteByte('\n')
+		}
+	}
+	return buf.String()
 }
