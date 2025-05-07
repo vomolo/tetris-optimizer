@@ -12,17 +12,31 @@ const (
 	minLines  = 4
 )
 
-// Validate checks a single tetromino file with optimized validation
-func Validate(filename string) error {
+type ValidationError struct {
+	message string
+}
+
+func (e *ValidationError) Error() string {
+	return e.message
+}
+
+func newValidationError(format string, args ...interface{}) error {
+	return &ValidationError{
+		message: fmt.Sprintf(format, args...),
+	}
+}
+
+// Validate checks the tetromino file and returns formatted output with letters
+func Validate(filename string) (string, error) {
 	fullPath := filename
 	if filepath.Dir(filename) != tetrisDir {
 		fullPath = filepath.Join(tetrisDir, filename)
 	}
 
 	if err := validateStructure(fullPath); err != nil {
-		return err
+		return "", err
 	}
-	return validateContent(fullPath)
+	return validateAndPrintContent(fullPath)
 }
 
 func validateStructure(fullPath string) error {
@@ -40,25 +54,24 @@ func validateStructure(fullPath string) error {
 	return nil
 }
 
-// Optimized content validation
-func validateContent(fullPath string) error {
+func validateAndPrintContent(fullPath string) (string, error) {
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		return newValidationError("failed to read file: %v", err)
+		return "", newValidationError("failed to read file: %v", err)
 	}
 
-	// Quick size check
-	if len(content) < 20 { // Minimum 4 lines + separators
-		return newValidationError("file too small to be valid")
+	if len(content) < 20 {
+		return "", newValidationError("file too small to be valid")
 	}
 
 	lines := bytes.Split(content, []byte{'\n'})
 	var (
 		lineCount    int
-		blockLines   [4][]byte // Fixed-size array for better performance
+		blockLines   [4][]byte
 		blockIndex   int
 		hasContent   bool
 		blockCounter int
+		output       bytes.Buffer
 	)
 
 	for _, line := range lines {
@@ -68,18 +81,18 @@ func validateContent(fullPath string) error {
 		// Validate characters
 		for _, char := range line {
 			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
-				return newValidationError("invalid character '%c' in line %d", char, lineCount)
+				return "", newValidationError("invalid character '%c' in line %d", char, lineCount)
 			}
 		}
 
 		// Handle separator lines
 		if lineCount%5 == 0 {
 			if len(trimmed) > 0 {
-				return newValidationError("line %d must be empty", lineCount)
+				return "", newValidationError("line %d must be empty", lineCount)
 			}
 
-			if err := validateTetrominoBlock(blockLines[:], blockCounter+1); err != nil {
-				return err
+			if err := processBlock(blockLines[:], blockCounter, &output); err != nil {
+				return "", err
 			}
 			blockIndex = 0
 			blockCounter++
@@ -88,14 +101,14 @@ func validateContent(fullPath string) error {
 
 		// Validate tetromino lines
 		if len(trimmed) == 0 {
-			return newValidationError("line %d cannot be empty", lineCount)
+			return "", newValidationError("line %d cannot be empty", lineCount)
 		}
 		if len(trimmed) != 4 {
-			return newValidationError("line %d must have exactly 4 characters", lineCount)
+			return "", newValidationError("line %d must have exactly 4 characters", lineCount)
 		}
 
 		if blockIndex >= 4 {
-			return newValidationError("block %d has too many lines", blockCounter+1)
+			return "", newValidationError("block %d has too many lines", blockCounter+1)
 		}
 		blockLines[blockIndex] = trimmed
 		blockIndex++
@@ -104,24 +117,23 @@ func validateContent(fullPath string) error {
 
 	// Check last block if no trailing separator
 	if blockIndex > 0 {
-		if err := validateTetrominoBlock(blockLines[:blockIndex], blockCounter+1); err != nil {
-			return err
+		if err := processBlock(blockLines[:blockIndex], blockCounter, &output); err != nil {
+			return "", err
 		}
 	}
 
 	if !hasContent {
-		return newValidationError("file is empty")
+		return "", newValidationError("file is empty")
 	}
 	if lineCount < minLines {
-		return newValidationError("file must have at least %d lines", minLines)
+		return "", newValidationError("file must have at least %d lines", minLines)
 	}
-	return nil
+	return output.String(), nil
 }
 
-// Optimized tetromino validation using bitmask patterns
-func validateTetrominoBlock(block [][]byte, blockNumber int) error {
+func processBlock(block [][]byte, blockNumber int, output *bytes.Buffer) error {
 	if len(block) != 4 {
-		return newValidationError("block %d must have 4 lines (found %d)", blockNumber, len(block))
+		return newValidationError("block must have 4 lines (found %d)", len(block))
 	}
 
 	var (
@@ -129,6 +141,7 @@ func validateTetrominoBlock(block [][]byte, blockNumber int) error {
 		shape     uint16
 	)
 
+	// Count hashes and build shape
 	for y, line := range block {
 		for x, char := range line {
 			if char == '#' {
@@ -139,44 +152,35 @@ func validateTetrominoBlock(block [][]byte, blockNumber int) error {
 	}
 
 	if hashCount != 4 {
-		return newValidationError("block %d must have exactly 4 '#'", blockNumber)
+		return newValidationError("block must have exactly 4 '#' (found %d)", hashCount)
 	}
 
-	// Precomputed valid tetromino shapes (all rotations included)
+	// Check if valid tetromino
 	validShapes := map[uint16]bool{
-		// I-tetromino
-		0xF000: true, 0x1111: true,
-		// O-tetromino
-		0xCC00: true,
-		// T-tetromino
+		0xF000: true, 0x1111: true, 0xCC00: true,
 		0xE400: true, 0x4C40: true, 0x4E00: true, 0x8C80: true,
-		// L-tetromino
 		0xE800: true, 0xC440: true, 0x2E00: true, 0x88C0: true,
-		// J-tetromino
 		0xE200: true, 0x44C0: true, 0x8E00: true, 0xC880: true,
-		// S-tetromino
-		0x6C00: true, 0x8C40: true,
-		// Z-tetromino
-		0xC600: true, 0x4C80: true,
+		0x6C00: true, 0x8C40: true, 0xC600: true, 0x4C80: true,
 	}
 
 	if !validShapes[shape] {
-		return newValidationError("block %d is not a valid tetromino", blockNumber)
+		return newValidationError("block is not a valid tetromino")
 	}
+
+	// Replace # with corresponding letter and print
+	letter := 'A' + rune(blockNumber)
+	for _, line := range block {
+		for _, char := range line {
+			if char == '#' {
+				output.WriteRune(letter)
+			} else {
+				output.WriteByte(char)
+			}
+		}
+		output.WriteByte('\n')
+	}
+	output.WriteByte('\n') // Add separator after each block
+
 	return nil
-}
-
-// Rest of the code remains the same...
-type ValidationError struct {
-	message string
-}
-
-func (e *ValidationError) Error() string {
-	return e.message
-}
-
-func newValidationError(format string, args ...interface{}) error {
-	return &ValidationError{
-		message: fmt.Sprintf(format, args...),
-	}
 }
