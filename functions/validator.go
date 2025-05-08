@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	tetrisDir = "tetris_files"
-	minLines  = 4
+	tetrisDir    = "tetris_files"
+	minLines     = 4
+	maxBoardSize = 10
 )
 
 func Validate(filename string) (string, error) {
