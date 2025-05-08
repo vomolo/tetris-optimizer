@@ -245,13 +245,14 @@ func NewBoard(size int) *Board {
 }
 
 func (b *Board) canPlace(t *Tetromino, x, y int) bool {
-	for _, p := range t.Points {
-		nx, ny := x+p.X, y+p.Y
-		if nx >= b.Size || ny >= b.Size || b.Grid[ny][nx] != 0 {
-			return false
-		}
-	}
-	return true
+    for _, p := range t.Points {
+        nx, ny := x+p.X, y+p.Y
+        // Check both positive bounds and upper bounds
+        if nx < 0 || ny < 0 || nx >= b.Size || ny >= b.Size || b.Grid[ny][nx] != 0 {
+            return false
+        }
+    }
+    return true
 }
 
 func (b *Board) place(t *Tetromino, x, y int) {
