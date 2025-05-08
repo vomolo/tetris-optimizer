@@ -184,8 +184,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 func isValidTetromino(points [4]Point) bool {
 	// Precompute all possible neighbor offsets
 	var connected [4]bool
-	count := 1
-
+	
 	// Check each point's neighbors
 	for i := 0; i < 4; i++ {
 		for j := i + 1; j < 4; j++ {
