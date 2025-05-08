@@ -217,7 +217,6 @@ func solve(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
 func generateRotations(t *Tetromino) []*Tetromino {
 	rotations := []*Tetromino{t}
 
-	// Generate 3 rotations (90°, 180°, 270°)
 	for i := 0; i < 3; i++ {
 		rotated := &Tetromino{
 			Letter: t.Letter,
