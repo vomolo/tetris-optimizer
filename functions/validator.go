@@ -223,28 +223,6 @@ func solve(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
     return nil, false
 }
 
-func generateRotations(t *Tetromino) []*Tetromino {
-	rotations := []*Tetromino{t}
-
-	for i := 0; i < 3; i++ {
-		rotated := &Tetromino{
-			Letter: t.Letter,
-			Width:  t.Height,
-			Height: t.Width,
-		}
-
-		for _, p := range rotations[len(rotations)-1].Points {
-			rotated.Points = append(rotated.Points, Point{
-				X: t.Height - 1 - p.Y,
-				Y: p.X,
-			})
-		}
-		rotations = append(rotations, rotated)
-	}
-
-	return rotations
-}
-
 func NewBoard(size int) *Board {
 	grid := make([][]rune, size)
 	for i := range grid {
