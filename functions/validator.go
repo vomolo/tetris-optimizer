@@ -130,6 +130,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 		minY, maxY = 3, 0
 	)
 
+	// First pass: count hashes and record positions
 	for y, line := range block {
 		for x, char := range line {
 			if char == '#' {
@@ -151,13 +152,20 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 		}
 	}
 
+	// Validate hash count
 	if hashCount != 4 {
 		return nil, newValidationError("block must have exactly 4 '#' (found %d)", hashCount)
 	}
 
+	// Create normalized points (relative to minX, minY)
 	for i := range points {
 		points[i].X -= minX
 		points[i].Y -= minY
+	}
+
+	// Validate the tetromino shape
+	if !isValidTetromino(points) {
+		return nil, newValidationError("invalid tetromino shape at block %d", blockNumber)
 	}
 
 	return &Tetromino{
@@ -166,6 +174,46 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 		Width:  maxX - minX + 1,
 		Height: maxY - minY + 1,
 	}, nil
+}
+
+func isValidTetromino(points []Point) bool {
+	// Check if all points are connected (forms a valid tetromino)
+	visited := make(map[Point]bool)
+	queue := []Point{points[0]}
+	visited[points[0]] = true
+	count := 1
+
+	directions := []Point{
+		{X: 1, Y: 0},  // right
+		{X: -1, Y: 0}, // left
+		{X: 0, Y: 1},  // down
+		{X: 0, Y: -1}, // up
+	}
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		for _, dir := range directions {
+			neighbor := Point{X: current.X + dir.X, Y: current.Y + dir.Y}
+			if containsPoint(points, neighbor) && !visited[neighbor] {
+				visited[neighbor] = true
+				queue = append(queue, neighbor)
+				count++
+			}
+		}
+	}
+
+	return count == 4
+}
+
+func containsPoint(points []Point, target Point) bool {
+	for _, p := range points {
+		if p == target {
+			return true
+		}
+	}
+	return false
 }
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
@@ -205,7 +253,9 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 
 	// Try different piece orderings
 	sortStrategies := []func(i, j int) bool{
-		func(i, j int) bool { return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height },
+		func(i, j int) bool {
+			return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height
+		},
 		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
 		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
 	}
