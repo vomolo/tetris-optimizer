@@ -181,7 +181,7 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 
 	for size := minSize; size <= minSize+5; size++ {
 		board := NewBoard(size)
-		if solution, solved := solve(tetrominos, 0, board); solved {
+		if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
 			return boardToString(solution), nil
 		}
 	}
