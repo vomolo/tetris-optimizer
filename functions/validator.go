@@ -234,8 +234,8 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 
 	// Try square boards first with different sorting strategies
 	sortStrategies := []func(i, j int) bool{
-		func(i, j int) bool { 
-			return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height 
+		func(i, j int) bool {
+			return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height
 		},
 		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
 		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
@@ -294,6 +294,13 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	}
 
 	return "", fmt.Errorf("no solution found")
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
