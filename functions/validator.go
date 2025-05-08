@@ -169,20 +169,44 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 }
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
-	minSize := 2
-	for minSize*minSize < len(tetrominos)*4 {
-		minSize++
+	minArea := len(tetrominos) * 4
+    
+	// Generate possible rectangle dimensions (width >= height)
+	var dimensions []struct{ width, height int }
+	for height := 2; height <= 10; height++ {
+		for width := height; width <= 10; width++ {
+			if width*height >= minArea {
+				dimensions = append(dimensions, struct{ width, height int }{width, height})
+			}
+		}
 	}
-
-	sort.Slice(tetrominos, func(i, j int) bool {
-		return tetrominos[i].Width*tetrominos[i].Height >
-			tetrominos[j].Width*tetrominos[j].Height
+    
+	// Sort by area, then by perimeter (more square-like first)
+	sort.Slice(dimensions, func(i, j int) bool {
+		areaI := dimensions[i].width * dimensions[i].height
+		areaJ := dimensions[j].width * dimensions[j].height
+		if areaI != areaJ {
+			return areaI < areaJ
+		}
+		return (dimensions[i].width + dimensions[i].height) < (dimensions[j].width + dimensions[j].height)
 	})
 
-	for size := minSize; size <= minSize+5; size++ {
-		board := NewBoard(size)
-		if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
-			return boardToString(solution), nil
+	// Try different piece orderings
+	sortStrategies := []func(i, j int) bool{
+		// Current strategy
+		func(i, j int) bool { return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height },
+		// Alternative strategies
+		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
+		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
+	}
+
+	for _, dim := range dimensions {
+		for _, sortFn := range sortStrategies {
+			sort.Slice(tetrominos, sortFn)
+			board := NewBoard(dim.width, dim.height)
+			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
+				return boardToString(solution), nil
+			}
 		}
 	}
 
@@ -195,8 +219,8 @@ func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Bo
 	}
 
 	current := tetrominos[index]
-	maxY := board.Size - current.Height
-	maxX := board.Size - current.Width
+	maxY := board.Height - current.Height
+	maxX := board.Width - current.Width
 
 	if maxY < 0 || maxX < 0 {
 		return nil, false
@@ -217,18 +241,18 @@ func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Bo
 	return nil, false
 }
 
-func NewBoard(size int) *Board {
-	grid := make([][]rune, size)
+func NewBoard(width, height int) *Board {
+	grid := make([][]rune, height)
 	for i := range grid {
-		grid[i] = make([]rune, size)
+		grid[i] = make([]rune, width)
 	}
-	return &Board{Grid: grid, Size: size}
+	return &Board{Grid: grid, Width: width, Height: height}
 }
 
 func (b *Board) canPlace(t *Tetromino, x, y int) bool {
 	for _, p := range t.Points {
 		nx, ny := x+p.X, y+p.Y
-		if nx < 0 || ny < 0 || nx >= b.Size || ny >= b.Size || b.Grid[ny][nx] != 0 {
+		if nx < 0 || ny < 0 || nx >= b.Width || ny >= b.Height || b.Grid[ny][nx] != 0 {
 			return false
 		}
 	}
@@ -251,15 +275,15 @@ func (b *Board) remove(t *Tetromino, x, y int) {
 
 func boardToString(b *Board) string {
 	var buf bytes.Buffer
-	for y := 0; y < b.Size; y++ {
-		for x := 0; x < b.Size; x++ {
+	for y := 0; y < b.Height; y++ {
+		for x := 0; x < b.Width; x++ {
 			if b.Grid[y][x] == 0 {
 				buf.WriteByte('.')
 			} else {
 				buf.WriteRune(b.Grid[y][x])
 			}
 		}
-		if y < b.Size-1 {
+		if y < b.Height-1 {
 			buf.WriteByte('\n')
 		}
 	}
