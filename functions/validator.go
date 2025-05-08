@@ -129,6 +129,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 		points     [4]Point
 		minX, maxX = 3, 0
 		minY, maxY = 3, 0
+		pointIdx   int
 	)
 
 	// First pass: count hashes and record positions
