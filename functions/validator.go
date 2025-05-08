@@ -126,7 +126,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 
 	var (
 		hashCount  int
-		points     []Point
+		points     [4]Point
 		minX, maxX = 3, 0
 		minY, maxY = 3, 0
 	)
