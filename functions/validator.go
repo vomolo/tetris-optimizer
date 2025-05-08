@@ -228,18 +228,35 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		minSize++
 	}
 
-	// Try square boards first
-	for size := minSize; size <= minSize+5; size++ {
-		board := NewBoard(size, size)
-		if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
-			return boardToString(solution), nil
+	// Cache the original order
+	originalOrder := make([]*Tetromino, len(tetrominos))
+	copy(originalOrder, tetrominos)
+
+	// Try square boards first with different sorting strategies
+	sortStrategies := []func(i, j int) bool{
+		func(i, j int) bool { 
+			return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height 
+		},
+		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
+		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
+	}
+
+	for size := minSize; size <= min(maxBoardSize, minSize+5); size++ {
+		for _, sortFn := range sortStrategies {
+			sort.Slice(tetrominos, sortFn)
+			board := NewBoard(size, size)
+			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
+				return boardToString(solution), nil
+			}
+			// Restore original order for next attempt
+			copy(tetrominos, originalOrder)
 		}
 	}
 
 	// If no square solution found, try rectangular boards
 	var dimensions []struct{ width, height int }
-	for height := 2; height <= 10; height++ {
-		for width := height + 1; width <= 10; width++ { // Skip squares (width == height)
+	for height := 2; height <= maxBoardSize; height++ {
+		for width := height + 1; width <= maxBoardSize; width++ {
 			if width*height >= minArea {
 				dimensions = append(dimensions, struct{ width, height int }{width, height})
 			}
@@ -250,20 +267,20 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	sort.Slice(dimensions, func(i, j int) bool {
 		ratioI := float64(dimensions[i].width) / float64(dimensions[i].height)
 		ratioJ := float64(dimensions[j].width) / float64(dimensions[j].height)
-		if ratioI > ratioJ {
-			return ratioI < ratioJ
+		// Prefer boards closer to square
+		diffI := ratioI - 1.0
+		if diffI < 0 {
+			diffI = -diffI
+		}
+		diffJ := ratioJ - 1.0
+		if diffJ < 0 {
+			diffJ = -diffJ
+		}
+		if diffI != diffJ {
+			return diffI < diffJ
 		}
 		return dimensions[i].width*dimensions[i].height < dimensions[j].width*dimensions[j].height
 	})
-
-	// Try different piece orderings
-	sortStrategies := []func(i, j int) bool{
-		func(i, j int) bool {
-			return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height
-		},
-		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
-		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
-	}
 
 	for _, dim := range dimensions {
 		for _, sortFn := range sortStrategies {
@@ -272,6 +289,7 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
 				return boardToString(solution), nil
 			}
+			copy(tetrominos, originalOrder)
 		}
 	}
 
