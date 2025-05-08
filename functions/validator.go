@@ -170,32 +170,42 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	minArea := len(tetrominos) * 4
-    
-	// Generate possible rectangle dimensions (width >= height)
+	minSize := 2
+	for minSize*minSize < minArea {
+		minSize++
+	}
+
+	// Try square boards first
+	for size := minSize; size <= minSize+5; size++ {
+		board := NewBoard(size, size)
+		if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
+			return boardToString(solution), nil
+		}
+	}
+
+	// If no square solution found, try rectangular boards
 	var dimensions []struct{ width, height int }
 	for height := 2; height <= 10; height++ {
-		for width := height; width <= 10; width++ {
+		for width := height + 1; width <= 10; width++ { // Skip squares (width == height)
 			if width*height >= minArea {
 				dimensions = append(dimensions, struct{ width, height int }{width, height})
 			}
 		}
 	}
-    
-	// Sort by area, then by perimeter (more square-like first)
+
+	// Sort rectangular boards by how close they are to square
 	sort.Slice(dimensions, func(i, j int) bool {
-		areaI := dimensions[i].width * dimensions[i].height
-		areaJ := dimensions[j].width * dimensions[j].height
-		if areaI != areaJ {
-			return areaI < areaJ
+		ratioI := float64(dimensions[i].width) / float64(dimensions[i].height)
+		ratioJ := float64(dimensions[j].width) / float64(dimensions[j].height)
+		if ratioI > ratioJ {
+			return ratioI < ratioJ
 		}
-		return (dimensions[i].width + dimensions[i].height) < (dimensions[j].width + dimensions[j].height)
+		return dimensions[i].width*dimensions[i].height < dimensions[j].width*dimensions[j].height
 	})
 
 	// Try different piece orderings
 	sortStrategies := []func(i, j int) bool{
-		// Current strategy
 		func(i, j int) bool { return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height },
-		// Alternative strategies
 		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
 		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
 	}
@@ -226,6 +236,7 @@ func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Bo
 		return nil, false
 	}
 
+	// Try placing the piece in all possible positions
 	for y := 0; y <= maxY; y++ {
 		for x := 0; x <= maxX; x++ {
 			if board.canPlace(current, x, y) {
