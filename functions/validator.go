@@ -223,6 +223,38 @@ func solve(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
     return nil, false
 }
 
+
+func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
+	if index == len(tetrominos) {
+		return board, true
+	}
+
+	current := tetrominos[index]
+	
+	// Calculate maximum valid positions
+	maxY := board.Size - current.Height
+	maxX := board.Size - current.Width
+	
+	// Skip if piece is larger than board
+	if maxY < 0 || maxX < 0 {
+		return nil, false
+	}
+
+	for y := 0; y <= maxY; y++ {
+		for x := 0; x <= maxX; x++ {
+			if board.canPlace(current, x, y) {
+				board.place(current, x, y)
+				if solution, solved := solveWithoutRotation(tetrominos, index+1, board); solved {
+					return solution, true
+				}
+				board.remove(current, x, y)
+			}
+		}
+	}
+
+	return nil, false
+}
+
 func NewBoard(size int) *Board {
 	grid := make([][]rune, size)
 	for i := range grid {
