@@ -126,7 +126,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 
 	var (
 		hashCount  int
-		points     [4]Point
+		points     [4]Point // Fixed size array since we know it's exactly 4 points
 		minX, maxX = 3, 0
 		minY, maxY = 3, 0
 		pointIdx   int
@@ -136,8 +136,12 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 	for y, line := range block {
 		for x, char := range line {
 			if char == '#' {
+				if hashCount >= 4 {
+					return nil, newValidationError("block has more than 4 '#' characters")
+				}
+				points[pointIdx] = Point{X: x, Y: y}
+				pointIdx++
 				hashCount++
-				points = append(points, Point{X: x, Y: y})
 				if x < minX {
 					minX = x
 				}
@@ -154,7 +158,6 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 		}
 	}
 
-	// Validate hash count
 	if hashCount != 4 {
 		return nil, newValidationError("block must have exactly 4 '#' (found %d)", hashCount)
 	}
@@ -171,7 +174,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 	}
 
 	return &Tetromino{
-		Points: points,
+		Points: points[:],
 		Letter: 'A' + rune(blockNumber),
 		Width:  maxX - minX + 1,
 		Height: maxY - minY + 1,
