@@ -181,35 +181,35 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 	}, nil
 }
 
-func isValidTetromino(points []Point) bool {
-	// Check if all points are connected (forms a valid tetromino)
-	visited := make(map[Point]bool)
-	queue := []Point{points[0]}
-	visited[points[0]] = true
+func isValidTetromino(points [4]Point) bool {
+	// Precompute all possible neighbor offsets
+	var connected [4]bool
 	count := 1
 
-	directions := []Point{
-		{X: 1, Y: 0},  // right
-		{X: -1, Y: 0}, // left
-		{X: 0, Y: 1},  // down
-		{X: 0, Y: -1}, // up
-	}
-
-	for len(queue) > 0 {
-		current := queue[0]
-		queue = queue[1:]
-
-		for _, dir := range directions {
-			neighbor := Point{X: current.X + dir.X, Y: current.Y + dir.Y}
-			if containsPoint(points, neighbor) && !visited[neighbor] {
-				visited[neighbor] = true
-				queue = append(queue, neighbor)
-				count++
+	// Check each point's neighbors
+	for i := 0; i < 4; i++ {
+		for j := i + 1; j < 4; j++ {
+			dx := points[i].X - points[j].X
+			dy := points[i].Y - points[j].Y
+			if (dx == 1 && dy == 0) || (dx == -1 && dy == 0) ||
+				(dx == 0 && dy == 1) || (dx == 0 && dy == -1) {
+				connected[i] = true
+				connected[j] = true
 			}
 		}
 	}
 
-	return count == 4
+	// Count connected points
+	connectionCount := 0
+	for _, c := range connected {
+		if c {
+			connectionCount++
+		}
+	}
+
+	// For a valid tetromino, we need at least 3 connections
+	// (linear shape has 3, others have more)
+	return connectionCount >= 3
 }
 
 func containsPoint(points []Point, target Point) bool {
