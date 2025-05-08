@@ -190,28 +190,37 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 }
 
 func solve(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
-	if index == len(tetrominos) {
-		return board, true
-	}
+    if index == len(tetrominos) {
+        return board, true
+    }
 
-	current := tetrominos[index]
-	rotations := generateRotations(current)
+    current := tetrominos[index]
+    rotations := generateRotations(current)
 
-	for _, rot := range rotations {
-		for y := 0; y <= board.Size-rot.Height; y++ {
-			for x := 0; x <= board.Size-rot.Width; x++ {
-				if board.canPlace(rot, x, y) {
-					board.place(rot, x, y)
-					if solution, solved := solve(tetrominos, index+1, board); solved {
-						return solution, true
-					}
-					board.remove(rot, x, y)
-				}
-			}
-		}
-	}
+    for _, rot := range rotations {
+        // Ensure we don't go out of bounds when placing
+        maxY := board.Size - rot.Height
+        maxX := board.Size - rot.Width
+        
+        // Skip if piece is larger than board
+        if maxY < 0 || maxX < 0 {
+            continue
+        }
 
-	return nil, false
+        for y := 0; y <= maxY; y++ {
+            for x := 0; x <= maxX; x++ {
+                if board.canPlace(rot, x, y) {
+                    board.place(rot, x, y)
+                    if solution, solved := solve(tetrominos, index+1, board); solved {
+                        return solution, true
+                    }
+                    board.remove(rot, x, y)
+                }
+            }
+        }
+    }
+
+    return nil, false
 }
 
 func generateRotations(t *Tetromino) []*Tetromino {
