@@ -365,8 +365,8 @@ func (b *Board) remove(t *Tetromino, x, y int) {
 
 func boardToString(b *Board) string {
 	var buf bytes.Buffer
-	for y := 0; y < b.Height; y++ {
-		for x := 0; x < b.Width; x++ {
+	for y := range b.Height {
+		for x := range b.Width {
 			if b.Grid[y][x] == 0 {
 				buf.WriteByte('.')
 			} else {
