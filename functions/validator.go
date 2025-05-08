@@ -47,8 +47,8 @@ func validateAndSolveContent(fullPath string) (string, error) {
 		return "", newValidationError("failed to read file: %v", err)
 	}
 
-	if len(content) < 20 {
-		return "", newValidationError("file too small to be valid")
+	if len(content) < 16 {
+		return "", newValidationError("ERROR")
 	}
 
 	lines := bytes.Split(content, []byte{'\n'})
@@ -184,7 +184,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 func isValidTetromino(points [4]Point) bool {
 	// Precompute all possible neighbor offsets
 	var connected [4]bool
-	
+
 	// Check each point's neighbors
 	for i := 0; i < 4; i++ {
 		for j := i + 1; j < 4; j++ {
