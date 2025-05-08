@@ -189,53 +189,15 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	return "", fmt.Errorf("no solution found")
 }
 
-func solve(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
-    if index == len(tetrominos) {
-        return board, true
-    }
-
-    current := tetrominos[index]
-    rotations := generateRotations(current)
-
-    for _, rot := range rotations {
-        // Ensure we don't go out of bounds when placing
-        maxY := board.Size - rot.Height
-        maxX := board.Size - rot.Width
-        
-        // Skip if piece is larger than board
-        if maxY < 0 || maxX < 0 {
-            continue
-        }
-
-        for y := 0; y <= maxY; y++ {
-            for x := 0; x <= maxX; x++ {
-                if board.canPlace(rot, x, y) {
-                    board.place(rot, x, y)
-                    if solution, solved := solve(tetrominos, index+1, board); solved {
-                        return solution, true
-                    }
-                    board.remove(rot, x, y)
-                }
-            }
-        }
-    }
-
-    return nil, false
-}
-
-
 func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
 	if index == len(tetrominos) {
 		return board, true
 	}
 
 	current := tetrominos[index]
-	
-	// Calculate maximum valid positions
 	maxY := board.Size - current.Height
 	maxX := board.Size - current.Width
-	
-	// Skip if piece is larger than board
+
 	if maxY < 0 || maxX < 0 {
 		return nil, false
 	}
@@ -264,14 +226,13 @@ func NewBoard(size int) *Board {
 }
 
 func (b *Board) canPlace(t *Tetromino, x, y int) bool {
-    for _, p := range t.Points {
-        nx, ny := x+p.X, y+p.Y
-        // Check both positive bounds and upper bounds
-        if nx < 0 || ny < 0 || nx >= b.Size || ny >= b.Size || b.Grid[ny][nx] != 0 {
-            return false
-        }
-    }
-    return true
+	for _, p := range t.Points {
+		nx, ny := x+p.X, y+p.Y
+		if nx < 0 || ny < 0 || nx >= b.Size || ny >= b.Size || b.Grid[ny][nx] != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 func (b *Board) place(t *Tetromino, x, y int) {

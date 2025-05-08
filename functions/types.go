@@ -14,9 +14,12 @@ type Tetromino struct {
 }
 
 type Board struct {
-	Grid   [][]rune
-	Size   int
-	Placed int
+	
+    Grid   [][]rune
+    Width  int
+    Height int
+    Placed int
+
 }
 
 type ValidationError struct {
