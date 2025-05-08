@@ -211,15 +211,6 @@ func isValidTetromino(points [4]Point) bool {
 	return connectionCount >= 3
 }
 
-func containsPoint(points []Point, target Point) bool {
-	for _, p := range points {
-		if p == target {
-			return true
-		}
-	}
-	return false
-}
-
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	minArea := len(tetrominos) * 4
 	minSize := 2
