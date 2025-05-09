@@ -44,7 +44,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	}
 
 	if len(content) < 16 {
-		return "", newValidationError("ERROR")
+		return "", newValidationError("File content too short")
 	}
 
 	lines := bytes.Split(content, []byte{'\n'})
@@ -63,16 +63,16 @@ func validateAndSolveContent(fullPath string) (string, error) {
 
 		for _, char := range line {
 			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
-				return "", newValidationError("ERROR")
+				return "", newValidationError("Invalid character in file")
 			}
 		}
 
 		if lineCount%5 == 0 {
 			if len(trimmed) > 0 {
-				return "", newValidationError("ERROR")
+				return "", newValidationError("Expected empty line after tetromino")
 			}
 
-			tetromino := validateAndCreateTetromino(blockLines[:], blockCounter)
+			tetromino, err := validateAndCreateTetromino(blockLines[:], blockCounter)
 			if err != nil {
 				return "", err
 			}
@@ -83,14 +83,14 @@ func validateAndSolveContent(fullPath string) (string, error) {
 		}
 
 		if len(trimmed) == 0 {
-			return "", newValidationError("ERROR")
+			return "", newValidationError("Unexpected empty line")
 		}
 		if len(trimmed) != 4 {
-			return "", newValidationError("ERROR")
+			return "", newValidationError("Tetromino line must be exactly 4 characters")
 		}
 
 		if blockIndex >= 4 {
-			return "", newValidationError("ERROR")
+			return "", newValidationError("Too many lines in tetromino block")
 		}
 		blockLines[blockIndex] = trimmed
 		blockIndex++
@@ -98,7 +98,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	}
 
 	if blockIndex > 0 {
-		tetromino := validateAndCreateTetromino(blockLines[:blockIndex], blockCounter)
+		tetromino, err := validateAndCreateTetromino(blockLines[:blockIndex], blockCounter)
 		if err != nil {
 			return "", err
 		}
@@ -106,10 +106,10 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	}
 
 	if !hasContent {
-		return "", newValidationError("ERROR")
+		return "", newValidationError("No valid content found")
 	}
 	if lineCount < minLines {
-		return "", newValidationError("ERROR")
+		return "", newValidationError("Not enough lines in file")
 	}
 
 	return SolveTetrominos(tetrominos)
