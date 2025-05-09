@@ -18,5 +18,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Print(solution)
+	fmt.Println(solution)
 }
