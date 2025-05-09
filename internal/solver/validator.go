@@ -110,7 +110,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 		return "", newValidationError("file is empty")
 	}
 	if lineCount < minLines {
-		return "", newValidationError("file must have at least %d lines", minLines)
+		return "", newValidationError("file must have at least %d lines")
 	}
 
 	return SolveTetrominos(tetrominos)
