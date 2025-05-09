@@ -73,7 +73,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 				return "", newValidationError("line %d must be empty", lineCount)
 			}
 
-			tetromino, err := validateAndCreateTetromino(blockLines[:], blockCounter)
+			tetromino := validateAndCreateTetromino(blockLines[:], blockCounter)
 			if err != nil {
 				return "", err
 			}
