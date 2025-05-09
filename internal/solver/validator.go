@@ -40,11 +40,11 @@ func validateStructure(fullPath string) error {
 func validateAndSolveContent(fullPath string) (string, error) {
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		return "", newValidationError("Failed to read file")
+		return "", newValidationError("ERROR")
 	}
 
 	if len(content) < 16 {
-		return "", newValidationError("File content too short")
+		return "", newValidationError("ERROR")
 	}
 
 	lines := bytes.Split(content, []byte{'\n'})
@@ -63,13 +63,13 @@ func validateAndSolveContent(fullPath string) (string, error) {
 
 		for _, char := range line {
 			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
-				return "", newValidationError("Invalid character in file")
+				return "", newValidationError("ERROR")
 			}
 		}
 
 		if lineCount%5 == 0 {
 			if len(trimmed) > 0 {
-				return "", newValidationError("Expected empty line after tetromino")
+				return "", newValidationError("ERROR")
 			}
 
 			tetromino, err := validateAndCreateTetromino(blockLines[:], blockCounter)
@@ -83,14 +83,14 @@ func validateAndSolveContent(fullPath string) (string, error) {
 		}
 
 		if len(trimmed) == 0 {
-			return "", newValidationError("Unexpected empty line")
+			return "", newValidationError("ERROR")
 		}
 		if len(trimmed) != 4 {
-			return "", newValidationError("Tetromino line must be exactly 4 characters")
+			return "", newValidationError("ERROR")
 		}
 
 		if blockIndex >= 4 {
-			return "", newValidationError("Too many lines in tetromino block")
+			return "", newValidationError("ERROR")
 		}
 		blockLines[blockIndex] = trimmed
 		blockIndex++
@@ -106,10 +106,10 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	}
 
 	if !hasContent {
-		return "", newValidationError("No valid content found")
+		return "", newValidationError("ERROR")
 	}
 	if lineCount < minLines {
-		return "", newValidationError("Not enough lines in file")
+		return "", newValidationError("ERROR")
 	}
 
 	return SolveTetrominos(tetrominos)
