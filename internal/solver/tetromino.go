@@ -13,7 +13,7 @@ type Tetromino struct {
 	Height int
 }
 
-func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino) {
+func validateAndCreateTetromino(block [][]byte, blockNumber int) *Tetromino {
 	if len(block) != 4 {
 		fmt.Println("ERROR")
 		return nil
@@ -77,26 +77,46 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino) {
 }
 
 func isValidTetromino(points [4]Point) bool {
-	var connected [4]bool
+	// Check for duplicates (optional, depending on requirements)
+	for i := 0; i < 4; i++ {
+		for j := i + 1; j < 4; j++ {
+			if points[i].X == points[j].X && points[i].Y == points[j].Y {
+				return false // duplicate points
+			}
+		}
+	}
 
-	for i := range 4 {
+	// Build adjacency list
+	adj := make([][]int, 4)
+	for i := 0; i < 4; i++ {
 		for j := i + 1; j < 4; j++ {
 			dx := points[i].X - points[j].X
 			dy := points[i].Y - points[j].Y
 			if (dx == 1 && dy == 0) || (dx == -1 && dy == 0) ||
 				(dx == 0 && dy == 1) || (dx == 0 && dy == -1) {
-				connected[i] = true
-				connected[j] = true
+				adj[i] = append(adj[i], j)
+				adj[j] = append(adj[j], i)
 			}
 		}
 	}
 
-	connectionCount := 0
-	for _, c := range connected {
-		if c {
-			connectionCount++
+	// Check if all points are reachable from the first point (single connected component)
+	visited := make([]bool, 4)
+	queue := []int{0}
+	visited[0] = true
+	count := 1
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		for _, neighbor := range adj[current] {
+			if !visited[neighbor] {
+				visited[neighbor] = true
+				queue = append(queue, neighbor)
+				count++
+			}
 		}
 	}
 
-	return connectionCount >= 3
+	return count == 4
 }
