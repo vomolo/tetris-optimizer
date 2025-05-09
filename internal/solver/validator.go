@@ -33,7 +33,7 @@ func validateStructure(fullPath string) error {
 			return newValidationError("file '%s' does not exist in %s directory",
 				filepath.Base(fullPath), tetrisDir)
 		}
-		return newValidationError("file access error: %v", err)
+		return newValidationError("file access error")
 	}
 	return nil
 }
@@ -41,7 +41,7 @@ func validateStructure(fullPath string) error {
 func validateAndSolveContent(fullPath string) (string, error) {
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		return "", newValidationError("failed to read file: %v", err)
+		return "", newValidationError("failed to read file")
 	}
 
 	if len(content) < 16 {
@@ -64,13 +64,13 @@ func validateAndSolveContent(fullPath string) (string, error) {
 
 		for _, char := range line {
 			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
-				return "", newValidationError("invalid character '%c' in line %d", char, lineCount)
+				return "", newValidationError("invalid character in line")
 			}
 		}
 
 		if lineCount%5 == 0 {
 			if len(trimmed) > 0 {
-				return "", newValidationError("line %d must be empty", lineCount)
+				return "", newValidationError("line must be empty")
 			}
 
 			tetromino := validateAndCreateTetromino(blockLines[:], blockCounter)
@@ -84,14 +84,14 @@ func validateAndSolveContent(fullPath string) (string, error) {
 		}
 
 		if len(trimmed) == 0 {
-			return "", newValidationError("line %d cannot be empty", lineCount)
+			return "", newValidationError("line cannot be empty")
 		}
 		if len(trimmed) != 4 {
-			return "", newValidationError("line %d must have exactly 4 characters", lineCount)
+			return "", newValidationError("line must have exactly 4 characters")
 		}
 
 		if blockIndex >= 4 {
-			return "", newValidationError("block %d has too many lines", blockCounter+1)
+			return "", newValidationError("block has too many lines")
 		}
 		blockLines[blockIndex] = trimmed
 		blockIndex++
@@ -110,7 +110,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 		return "", newValidationError("file is empty")
 	}
 	if lineCount < minLines {
-		return "", newValidationError("file must have at least %d lines")
+		return "", newValidationError("file must have at least lines")
 	}
 
 	return SolveTetrominos(tetrominos)
