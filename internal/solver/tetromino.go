@@ -13,10 +13,9 @@ type Tetromino struct {
 	Height int
 }
 
-func validateAndCreateTetromino(block [][]byte, blockNumber int) *Tetromino {
+func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, error) {
 	if len(block) != 4 {
-		fmt.Println("ERROR")
-		return nil
+		return nil, fmt.Errorf("tetromino block must have exactly 4 lines")
 	}
 
 	var (
@@ -28,11 +27,14 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) *Tetromino {
 	)
 
 	for y, line := range block {
+		if len(line) != 4 {
+			return nil, fmt.Errorf("each line in tetromino must be exactly 4 characters")
+		}
+
 		for x, char := range line {
 			if char == '#' {
 				if hashCount >= 4 {
-					fmt.Println("ERROR")
-					return nil
+					return nil, fmt.Errorf("tetromino cannot have more than 4 '#' characters")
 				}
 				points[pointIdx] = Point{X: x, Y: y}
 				pointIdx++
@@ -49,13 +51,14 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) *Tetromino {
 				if y > maxY {
 					maxY = y
 				}
+			} else if char != '.' {
+				return nil, fmt.Errorf("invalid character '%c' in tetromino", char)
 			}
 		}
 	}
 
 	if hashCount != 4 {
-		fmt.Println("ERROR")
-		return nil
+		return nil, fmt.Errorf("tetromino must have exactly 4 '#' characters")
 	}
 
 	for i := range points {
@@ -64,8 +67,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) *Tetromino {
 	}
 
 	if !isValidTetromino(points) {
-		fmt.Println("ERROR")
-		return nil
+		return nil, fmt.Errorf("invalid tetromino shape")
 	}
 
 	return &Tetromino{
@@ -73,7 +75,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) *Tetromino {
 		Letter: 'A' + rune(blockNumber),
 		Width:  maxX - minX + 1,
 		Height: maxY - minY + 1,
-	}
+	}, nil
 }
 
 func isValidTetromino(points [4]Point) bool {
