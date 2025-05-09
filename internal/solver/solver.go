@@ -10,6 +10,10 @@ const (
 )
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
+	if len(tetrominos) == 0 {
+		return "", fmt.Errorf("no tetrominos to solve")
+	}
+
 	minArea := len(tetrominos) * 4
 	minSize := 2
 	for minSize*minSize < minArea {
@@ -31,6 +35,9 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		for _, sortFn := range sortStrategies {
 			sort.Slice(tetrominos, sortFn)
 			board := NewBoard(size, size)
+			if board == nil {
+				continue
+			}
 			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
 				return boardToString(solution), nil
 			}
@@ -68,6 +75,9 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		for _, sortFn := range sortStrategies {
 			sort.Slice(tetrominos, sortFn)
 			board := NewBoard(dim.width, dim.height)
+			if board == nil {
+				continue
+			}
 			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
 				return boardToString(solution), nil
 			}
@@ -75,15 +85,19 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("ERROR")
+	return "", fmt.Errorf("no solution found")
 }
 
 func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
-	if index == len(tetrominos) {
+	if index >= len(tetrominos) {
 		return board, true
 	}
 
 	current := tetrominos[index]
+	if current == nil || board == nil {
+		return nil, false
+	}
+
 	maxY := board.Height - current.Height
 	maxX := board.Width - current.Width
 
