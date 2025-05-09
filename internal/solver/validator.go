@@ -99,7 +99,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	}
 
 	if blockIndex > 0 {
-		tetromino, err := validateAndCreateTetromino(blockLines[:blockIndex], blockCounter)
+		tetromino := validateAndCreateTetromino(blockLines[:blockIndex], blockCounter)
 		if err != nil {
 			return "", err
 		}
