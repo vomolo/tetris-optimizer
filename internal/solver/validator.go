@@ -25,14 +25,14 @@ func Validate(filename string) (string, error) {
 
 func validateStructure(fullPath string) error {
 	if filepath.Ext(fullPath) != ".txt" {
-		return newValidationError("file must have .txt extension")
+		return newValidationError("File must have .txt extension")
 	}
 
 	if _, err := os.Stat(fullPath); err != nil {
 		if os.IsNotExist(err) {
-			return newValidationError("file does not exist in directory")
+			return newValidationError("File does not exist in directory")
 		}
-		return newValidationError("file access error")
+		return newValidationError("File access error")
 	}
 	return nil
 }
@@ -40,7 +40,7 @@ func validateStructure(fullPath string) error {
 func validateAndSolveContent(fullPath string) (string, error) {
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		return "", newValidationError("failed to read file")
+		return "", newValidationError("Failed to read file")
 	}
 
 	if len(content) < 16 {
