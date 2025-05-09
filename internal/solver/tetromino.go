@@ -1,5 +1,7 @@
 package solver
 
+import "fmt"
+
 type Point struct {
 	X, Y int
 }
@@ -11,9 +13,10 @@ type Tetromino struct {
 	Height int
 }
 
-func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, error) {
+func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino) {
 	if len(block) != 4 {
-		return nil, newValidationError("block must have 4 lines (found %d)", len(block))
+		fmt.Println("ERROR")
+		return nil
 	}
 
 	var (
@@ -28,7 +31,8 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 		for x, char := range line {
 			if char == '#' {
 				if hashCount >= 4 {
-					return nil, newValidationError("block has more than 4 '#' characters")
+					fmt.Println("ERROR")
+					return nil
 				}
 				points[pointIdx] = Point{X: x, Y: y}
 				pointIdx++
@@ -50,7 +54,8 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 	}
 
 	if hashCount != 4 {
-		return nil, newValidationError("block must have exactly 4 '#' (found %d)", hashCount)
+		fmt.Println("ERROR")
+		return nil
 	}
 
 	for i := range points {
@@ -59,7 +64,8 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 	}
 
 	if !isValidTetromino(points) {
-		return nil, newValidationError("invalid tetromino shape at block %d", blockNumber)
+		fmt.Println("ERROR")
+		return nil
 	}
 
 	return &Tetromino{
