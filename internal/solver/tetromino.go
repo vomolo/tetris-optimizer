@@ -73,7 +73,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino) {
 		Letter: 'A' + rune(blockNumber),
 		Width:  maxX - minX + 1,
 		Height: maxY - minY + 1,
-	}, nil
+	}
 }
 
 func isValidTetromino(points [4]Point) bool {
