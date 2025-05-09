@@ -30,8 +30,7 @@ func validateStructure(fullPath string) error {
 
 	if _, err := os.Stat(fullPath); err != nil {
 		if os.IsNotExist(err) {
-			return newValidationError("file '%s' does not exist in %s directory",
-				filepath.Base(fullPath), tetrisDir)
+			return newValidationError("file does not exist in directory")
 		}
 		return newValidationError("file access error")
 	}
