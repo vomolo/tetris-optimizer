@@ -14,9 +14,9 @@ func main() {
 
 	solution, err := solver.Validate(os.Args[1])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)		
+		fmt.Fprintln(os.Stderr, "ERROR")
+		os.Exit(1)
 	}
 
-	
-	fmt.Println(solution)
+	fmt.Print(solution)
 }
