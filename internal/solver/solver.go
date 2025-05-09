@@ -11,7 +11,7 @@ const (
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	if len(tetrominos) == 0 {
-		return "", fmt.Errorf("no tetrominos to solve")
+		return "", fmt.Errorf("ERROR")
 	}
 
 	minArea := len(tetrominos) * 4
@@ -85,7 +85,7 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("no solution found")
+	return "", fmt.Errorf("ERROR")
 }
 
 func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
