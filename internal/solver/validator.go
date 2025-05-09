@@ -63,13 +63,13 @@ func validateAndSolveContent(fullPath string) (string, error) {
 
 		for _, char := range line {
 			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
-				return "", newValidationError("invalid character in line")
+				return "", newValidationError("ERROR")
 			}
 		}
 
 		if lineCount%5 == 0 {
 			if len(trimmed) > 0 {
-				return "", newValidationError("line must be empty")
+				return "", newValidationError("ERROR")
 			}
 
 			tetromino := validateAndCreateTetromino(blockLines[:], blockCounter)
@@ -83,14 +83,14 @@ func validateAndSolveContent(fullPath string) (string, error) {
 		}
 
 		if len(trimmed) == 0 {
-			return "", newValidationError("line cannot be empty")
+			return "", newValidationError("ERROR")
 		}
 		if len(trimmed) != 4 {
-			return "", newValidationError("line must have exactly 4 characters")
+			return "", newValidationError("ERROR")
 		}
 
 		if blockIndex >= 4 {
-			return "", newValidationError("block has too many lines")
+			return "", newValidationError("ERROR")
 		}
 		blockLines[blockIndex] = trimmed
 		blockIndex++
@@ -106,10 +106,10 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	}
 
 	if !hasContent {
-		return "", newValidationError("file is empty")
+		return "", newValidationError("ERROR")
 	}
 	if lineCount < minLines {
-		return "", newValidationError("file must have at least lines")
+		return "", newValidationError("ERROR")
 	}
 
 	return SolveTetrominos(tetrominos)
