@@ -90,7 +90,7 @@ func isValidTetromino(points [4]Point) bool {
 
 	// Build adjacency list
 	adj := make([][]int, 4)
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		for j := i + 1; j < 4; j++ {
 			dx := points[i].X - points[j].X
 			dy := points[i].Y - points[j].Y
