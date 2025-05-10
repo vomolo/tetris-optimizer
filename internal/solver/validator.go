@@ -3,7 +3,7 @@ package solver
 import (
 	"bytes"
 	"os"
-	"path/filepath"
+	"path/filepath" // helps with file path manipulation for cross-platform compatibility
 )
 
 const (
