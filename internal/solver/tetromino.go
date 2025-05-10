@@ -80,7 +80,7 @@ func validateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 
 func isValidTetromino(points [4]Point) bool {
 	// Check for duplicates (optional, depending on requirements)
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		for j := i + 1; j < 4; j++ {
 			if points[i].X == points[j].X && points[i].Y == points[j].Y {
 				return false // duplicate points
