@@ -2,8 +2,10 @@ package solver
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath" // helps with file path manipulation for cross-platform compatibility
+	"strings"
 )
 
 const (
@@ -12,15 +14,35 @@ const (
 )
 
 func Validate(filename string) (string, error) {
-	fullPath := filename
-	if filepath.Dir(filename) != tetrisDir {
-		fullPath = filepath.Join(tetrisDir, filename)
+	// Clean the input path first
+	cleanFilename := filepath.Clean(filename)
+
+	// Get absolute path of the tetris directory
+	absTetrisDir, err := filepath.Abs(tetrisDir)
+	if err != nil {
+		return "", fmt.Errorf("invalid tetris directory: %v", err)
 	}
 
-	if err := validateStructure(fullPath); err != nil {
+	// Get absolute path of the requested file
+	absFilePath, err := filepath.Abs(cleanFilename)
+	if err != nil {
+		return "", fmt.Errorf("invalid file path: %v", err)
+	}
+
+	// If file isn't already in the tetris directory, join them
+	if !strings.HasPrefix(absFilePath, absTetrisDir+string(filepath.Separator)) {
+		absFilePath = filepath.Join(absTetrisDir, cleanFilename)
+	}
+
+	// Verify the final path is still within our directory
+	if !strings.HasPrefix(absFilePath, absTetrisDir+string(filepath.Separator)) {
+		return "", fmt.Errorf("invalid file path: attempted directory traversal")
+	}
+
+	if err := validateStructure(absFilePath); err != nil {
 		return "", err
 	}
-	return validateAndSolveContent(fullPath)
+	return validateAndSolveContent(absFilePath)
 }
 
 func validateStructure(fullPath string) error {
