@@ -17,10 +17,7 @@ func TestSolveTetrominos(t *testing.T) {
 			args: args{
 				tetrominos: []*Tetromino{
 					{
-						Points: []Point{
-							{0, 0}, {1, 0},
-							{0, 1}, {1, 1},
-						},
+						Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
 						Letter: 'A',
 						Width:  2,
 						Height: 2,
@@ -35,26 +32,20 @@ func TestSolveTetrominos(t *testing.T) {
 			args: args{
 				tetrominos: []*Tetromino{
 					{
-						Points: []Point{
-							{0, 0}, {1, 0},
-							{0, 1}, {1, 1},
-						},
+						Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
 						Letter: 'A',
 						Width:  2,
 						Height: 2,
 					},
 					{
-						Points: []Point{
-							{0, 0}, {1, 0},
-							{0, 1}, {1, 1},
-						},
+						Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
 						Letter: 'B',
 						Width:  2,
 						Height: 2,
 					},
 				},
 			},
-			want:    "AABB\nAABB",
+			want:    "AABB\nAABB\n....\n....",
 			wantErr: false,
 		},
 		{
@@ -62,26 +53,20 @@ func TestSolveTetrominos(t *testing.T) {
 			args: args{
 				tetrominos: []*Tetromino{
 					{
-						Points: []Point{
-							{0, 0}, {1, 0},
-							{0, 1}, {1, 1},
-						},
+						Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
 						Letter: 'A',
 						Width:  2,
 						Height: 2,
 					},
 					{
-						Points: []Point{
-							{0, 0}, {0, 1},
-							{0, 2}, {0, 3},
-						},
+						Points: []Point{{0, 0}, {0, 1}, {0, 2}, {0, 3}},
 						Letter: 'B',
 						Width:  1,
 						Height: 4,
 					},
 				},
 			},
-			want:    "AAB.\nAAB.\nBB..\nBB..",
+			want:    "AAB.\nAAB.\n..B.\n..B.",
 			wantErr: false,
 		},
 		{
@@ -89,35 +74,26 @@ func TestSolveTetrominos(t *testing.T) {
 			args: args{
 				tetrominos: []*Tetromino{
 					{
-						Points: []Point{
-							{0, 0}, {0, 1},
-							{0, 2}, {1, 2},
-						},
+						Points: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 2}},
 						Letter: 'A',
 						Width:  2,
 						Height: 3,
 					},
 					{
-						Points: []Point{
-							{0, 0}, {0, 1},
-							{0, 2}, {1, 2},
-						},
+						Points: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 2}},
 						Letter: 'B',
 						Width:  2,
 						Height: 3,
 					},
 					{
-						Points: []Point{
-							{0, 0}, {0, 1},
-							{0, 2}, {1, 2},
-						},
+						Points: []Point{{0, 0}, {0, 1}, {0, 2}, {1, 2}},
 						Letter: 'C',
 						Width:  2,
 						Height: 3,
 					},
 				},
 			},
-			want:    "A.B.\nA.B.\nACBC\n.C.C",
+			want:    "A..B.\nA.CB.\nAACBB\n..CC.\n.....",
 			wantErr: false,
 		},
 		{
@@ -133,34 +109,14 @@ func TestSolveTetrominos(t *testing.T) {
 			args: args{
 				tetrominos: []*Tetromino{
 					{
-						Points: []Point{
-							{0, 0}, {1, 0}, {2, 0}, {3, 0},
-						},
+						Points: []Point{{0, 0}, {1, 0}, {2, 0}, {3, 0}},
 						Letter: 'A',
 						Width:  4,
 						Height: 1,
 					},
 					{
-						Points: []Point{
-							{0, 0}, {1, 0}, {2, 0}, {3, 0},
-						},
+						Points: []Point{{0, 0}, {1, 0}, {2, 0}, {3, 0}},
 						Letter: 'B',
-						Width:  4,
-						Height: 1,
-					},
-					{
-						Points: []Point{
-							{0, 0}, {1, 0}, {2, 0}, {3, 0},
-						},
-						Letter: 'C',
-						Width:  4,
-						Height: 1,
-					},
-					{
-						Points: []Point{
-							{0, 0}, {1, 0}, {2, 0}, {3, 0},
-						},
-						Letter: 'D',
 						Width:  4,
 						Height: 1,
 					},
