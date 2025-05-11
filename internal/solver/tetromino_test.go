@@ -5,314 +5,240 @@ import (
 	"testing"
 )
 
-func Test_validateAndCreateTetromino(t *testing.T) {
-	type args struct {
-		block       [][]byte
-		blockNumber int
-	}
+func TestTetrominoValidation(t *testing.T) {
+	t.Run("validateAndCreateTetromino", testValidateAndCreateTetromino)
+	t.Run("isValidTetromino", testIsValidTetromino)
+}
+
+func testValidateAndCreateTetromino(t *testing.T) {
 	tests := []struct {
-		name    string
-		args    args
-		want    *Tetromino
-		wantErr bool
+		name      string
+		block     [][]byte
+		blockNum  int
+		want      *Tetromino
+		wantError bool
 	}{
 		{
-			name: "valid square tetromino",
-			args: args{
-				block: [][]byte{
-					{'#', '#', '.', '.'},
-					{'#', '#', '.', '.'},
-					{'.', '.', '.', '.'},
-					{'.', '.', '.', '.'},
-				},
-				blockNumber: 0,
+			name: "valid square",
+			block: [][]byte{
+				{'#', '#', '.', '.'},
+				{'#', '#', '.', '.'},
+				{'.', '.', '.', '.'},
+				{'.', '.', '.', '.'},
 			},
+			blockNum: 0,
 			want: &Tetromino{
 				Points: []Point{
-					{X: 0, Y: 0},
-					{X: 1, Y: 0},
-					{X: 0, Y: 1},
-					{X: 1, Y: 1},
+					{0, 0}, {1, 0},
+					{0, 1}, {1, 1},
 				},
 				Letter: 'A',
 				Width:  2,
 				Height: 2,
 			},
-			wantErr: false,
 		},
 		{
-			name: "valid line tetromino",
-			args: args{
-				block: [][]byte{
-					{'#', '.', '.', '.'},
-					{'#', '.', '.', '.'},
-					{'#', '.', '.', '.'},
-					{'#', '.', '.', '.'},
-				},
-				blockNumber: 1,
+			name: "valid vertical line",
+			block: [][]byte{
+				{'#', '.', '.', '.'},
+				{'#', '.', '.', '.'},
+				{'#', '.', '.', '.'},
+				{'#', '.', '.', '.'},
 			},
+			blockNum: 1,
 			want: &Tetromino{
 				Points: []Point{
-					{X: 0, Y: 0},
-					{X: 0, Y: 1},
-					{X: 0, Y: 2},
-					{X: 0, Y: 3},
+					{0, 0}, {0, 1},
+					{0, 2}, {0, 3},
 				},
 				Letter: 'B',
 				Width:  1,
 				Height: 4,
 			},
-			wantErr: false,
 		},
 		{
-			name: "valid L-shaped tetromino",
-			args: args{
-				block: [][]byte{
-					{'#', '.', '.', '.'},
-					{'#', '.', '.', '.'},
-					{'#', '#', '.', '.'},
-					{'.', '.', '.', '.'},
-				},
-				blockNumber: 2,
+			name: "valid L-shape",
+			block: [][]byte{
+				{'#', '.', '.', '.'},
+				{'#', '.', '.', '.'},
+				{'#', '#', '.', '.'},
+				{'.', '.', '.', '.'},
 			},
+			blockNum: 2,
 			want: &Tetromino{
 				Points: []Point{
-					{X: 0, Y: 0},
-					{X: 0, Y: 1},
-					{X: 0, Y: 2},
-					{X: 1, Y: 2},
+					{0, 0}, {0, 1},
+					{0, 2}, {1, 2},
 				},
 				Letter: 'C',
 				Width:  2,
 				Height: 3,
 			},
-			wantErr: false,
 		},
 		{
-			name: "invalid tetromino - too few #",
-			args: args{
-				block: [][]byte{
-					{'#', '.', '.', '.'},
-					{'#', '.', '.', '.'},
-					{'#', '.', '.', '.'},
-					{'.', '.', '.', '.'},
-				},
-				blockNumber: 3,
+			name: "too few # characters",
+			block: [][]byte{
+				{'#', '.', '.', '.'},
+				{'#', '.', '.', '.'},
+				{'#', '.', '.', '.'},
+				{'.', '.', '.', '.'},
 			},
-			want:    nil,
-			wantErr: true,
+			blockNum:  3,
+			wantError: true,
 		},
 		{
-			name: "invalid tetromino - too many #",
-			args: args{
-				block: [][]byte{
-					{'#', '#', '.', '.'},
-					{'#', '#', '.', '.'},
-					{'#', '#', '.', '.'},
-					{'.', '.', '.', '.'},
-				},
-				blockNumber: 4,
+			name: "too many # characters",
+			block: [][]byte{
+				{'#', '#', '.', '.'},
+				{'#', '#', '.', '.'},
+				{'#', '#', '.', '.'},
+				{'.', '.', '.', '.'},
 			},
-			want:    nil,
-			wantErr: true,
+			blockNum:  4,
+			wantError: true,
 		},
 		{
-			name: "invalid tetromino - disconnected",
-			args: args{
-				block: [][]byte{
-					{'#', '.', '#', '.'},
-					{'.', '.', '.', '.'},
-					{'#', '.', '#', '.'},
-					{'.', '.', '.', '.'},
-				},
-				blockNumber: 5,
+			name: "disconnected points",
+			block: [][]byte{
+				{'#', '.', '#', '.'},
+				{'.', '.', '.', '.'},
+				{'#', '.', '#', '.'},
+				{'.', '.', '.', '.'},
 			},
-			want:    nil,
-			wantErr: true,
+			blockNum:  5,
+			wantError: true,
 		},
 		{
-			name: "invalid character in block",
-			args: args{
-				block: [][]byte{
-					{'#', '.', 'X', '.'},
-					{'#', '.', '.', '.'},
-					{'#', '#', '.', '.'},
-					{'.', '.', '.', '.'},
-				},
-				blockNumber: 6,
+			name: "invalid character",
+			block: [][]byte{
+				{'#', '.', 'X', '.'},
+				{'#', '.', '.', '.'},
+				{'#', '#', '.', '.'},
+				{'.', '.', '.', '.'},
 			},
-			want:    nil,
-			wantErr: true,
+			blockNum:  6,
+			wantError: true,
 		},
 		{
-			name: "invalid block size - too few rows",
-			args: args{
-				block: [][]byte{
-					{'#', '.', '.', '.'},
-					{'#', '.', '.', '.'},
-					{'#', '#', '.', '.'},
-				},
-				blockNumber: 7,
+			name: "too few rows",
+			block: [][]byte{
+				{'#', '.', '.', '.'},
+				{'#', '.', '.', '.'},
+				{'#', '#', '.', '.'},
 			},
-			want:    nil,
-			wantErr: true,
+			blockNum:  7,
+			wantError: true,
 		},
 		{
-			name: "invalid block size - too few columns",
-			args: args{
-				block: [][]byte{
-					{'#', '.', '.'},
-					{'#', '.', '.'},
-					{'#', '#', '.'},
-					{'.', '.', '.'},
-				},
-				blockNumber: 8,
+			name: "too few columns",
+			block: [][]byte{
+				{'#', '.', '.'},
+				{'#', '.', '.'},
+				{'#', '#', '.'},
+				{'.', '.', '.'},
 			},
-			want:    nil,
-			wantErr: true,
+			blockNum:  8,
+			wantError: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := validateAndCreateTetromino(tt.args.block, tt.args.blockNumber)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("validateAndCreateTetromino() error = %v, wantErr %v", err, tt.wantErr)
+			got, err := validateAndCreateTetromino(tt.block, tt.blockNum)
+			if (err != nil) != tt.wantError {
+				t.Errorf("got error %v, want error %v", err != nil, tt.wantError)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("validateAndCreateTetromino() = %v, want %v", got, tt.want)
+				t.Errorf("got %+v, want %+v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_isValidTetromino(t *testing.T) {
-	type args struct {
-		points [4]Point
-	}
+func testIsValidTetromino(t *testing.T) {
 	tests := []struct {
-		name string
-		args args
-		want bool
+		name   string
+		points [4]Point
+		want   bool
 	}{
 		{
-			name: "valid square tetromino",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 1, Y: 0},
-					{X: 0, Y: 1},
-					{X: 1, Y: 1},
-				},
+			name: "valid square",
+			points: [4]Point{
+				{0, 0}, {1, 0},
+				{0, 1}, {1, 1},
 			},
 			want: true,
 		},
 		{
-			name: "valid line tetromino (horizontal)",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 1, Y: 0},
-					{X: 2, Y: 0},
-					{X: 3, Y: 0},
-				},
+			name: "valid horizontal line",
+			points: [4]Point{
+				{0, 0}, {1, 0},
+				{2, 0}, {3, 0},
 			},
 			want: true,
 		},
 		{
-			name: "valid line tetromino (vertical)",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 0, Y: 1},
-					{X: 0, Y: 2},
-					{X: 0, Y: 3},
-				},
+			name: "valid vertical line",
+			points: [4]Point{
+				{0, 0}, {0, 1},
+				{0, 2}, {0, 3},
 			},
 			want: true,
 		},
 		{
-			name: "valid L-shaped tetromino",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 0, Y: 1},
-					{X: 0, Y: 2},
-					{X: 1, Y: 2},
-				},
+			name: "valid L-shape",
+			points: [4]Point{
+				{0, 0}, {0, 1},
+				{0, 2}, {1, 2},
 			},
 			want: true,
 		},
 		{
-			name: "valid T-shaped tetromino",
-			args: args{
-				points: [4]Point{
-					{X: 1, Y: 0},
-					{X: 0, Y: 1},
-					{X: 1, Y: 1},
-					{X: 2, Y: 1},
-				},
+			name: "valid T-shape",
+			points: [4]Point{
+				{1, 0}, {0, 1},
+				{1, 1}, {2, 1},
 			},
 			want: true,
 		},
 		{
-			name: "valid S-shaped tetromino",
-			args: args{
-				points: [4]Point{
-					{X: 1, Y: 0},
-					{X: 2, Y: 0},
-					{X: 0, Y: 1},
-					{X: 1, Y: 1},
-				},
+			name: "valid S-shape",
+			points: [4]Point{
+				{1, 0}, {2, 0},
+				{0, 1}, {1, 1},
 			},
 			want: true,
 		},
 		{
-			name: "invalid tetromino - disconnected points",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 2, Y: 0},
-					{X: 0, Y: 2},
-					{X: 2, Y: 2},
-				},
+			name: "disconnected points",
+			points: [4]Point{
+				{0, 0}, {2, 0},
+				{0, 2}, {2, 2},
 			},
 			want: false,
 		},
 		{
-			name: "invalid tetromino - three connected with one separate",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 1, Y: 0},
-					{X: 2, Y: 0},
-					{X: 0, Y: 2},
-				},
+			name: "three connected + one separate",
+			points: [4]Point{
+				{0, 0}, {1, 0},
+				{2, 0}, {0, 2},
 			},
 			want: false,
 		},
 		{
-			name: "invalid tetromino - diagonal connection only",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 1, Y: 1},
-					{X: 2, Y: 2},
-					{X: 3, Y: 3},
-				},
+			name: "diagonal connections only",
+			points: [4]Point{
+				{0, 0}, {1, 1},
+				{2, 2}, {3, 3},
 			},
 			want: false,
 		},
 		{
-			name: "invalid tetromino - duplicate points",
-			args: args{
-				points: [4]Point{
-					{X: 0, Y: 0},
-					{X: 0, Y: 0},
-					{X: 1, Y: 0},
-					{X: 2, Y: 0},
-				},
+			name: "duplicate points",
+			points: [4]Point{
+				{0, 0}, {0, 0},
+				{1, 0}, {2, 0},
 			},
 			want: false,
 		},
@@ -320,8 +246,9 @@ func Test_isValidTetromino(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := isValidTetromino(tt.args.points); got != tt.want {
-				t.Errorf("isValidTetromino() = %v, want %v", got, tt.want)
+			got := isValidTetromino(tt.points)
+			if got != tt.want {
+				t.Errorf("got %v, want %v", got, tt.want)
 			}
 		})
 	}
