@@ -68,7 +68,7 @@ func createTestFiles(t *testing.T) error {
 	return nil
 }
 
-func cleanupTestFiles(t *testing.T) {
+func cleanupTestFiles(_ *testing.T) {
 	files := []string{
 		"valid_single.txt",
 		// ... (keep other filenames the same) ...
