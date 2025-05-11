@@ -47,7 +47,7 @@ func TestValidate(t *testing.T) {
 }
 
 // Helper functions to create and clean up test files
-func createTestFiles(t *testing.T) error {
+func createTestFiles(_ *testing.T) error {
 	// Create testfiles directory if it doesn't exist
 	if err := os.MkdirAll("testfiles", 0755); err != nil {
 		return err
