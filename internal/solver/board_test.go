@@ -119,3 +119,62 @@ func TestPlaceAndRemove(t *testing.T) {
 		}
 	}
 }
+
+func TestBoardToString(t *testing.T) {
+	tests := []struct {
+		name     string
+		board    *Board
+		expected string
+	}{
+		{
+			"empty board",
+			NewBoard(3, 2),
+			"...\n...",
+		},
+		{
+			"partially filled",
+			func() *Board {
+				b := NewBoard(4, 4)
+				t := &Tetromino{
+					Points: []Point{{0, 0}, {1, 0}, {2, 0}, {1, 1}}, // T-shape
+					Letter: 'T',
+				}
+				b.place(t, 1, 1)
+				return b
+			}(),
+			"....\n.TT..\n.T...\n....",
+		},
+		{
+			"full row",
+			func() *Board {
+				b := NewBoard(3, 3)
+				t := &Tetromino{
+					Points: []Point{{0, 0}, {1, 0}, {2, 0}},
+					Letter: 'L',
+				}
+				b.place(t, 0, 1)
+				return b
+			}(),
+			"...\nLLL\n...",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := boardToString(tt.board)
+			if result != tt.expected {
+				t.Errorf("boardToString() = \n%v\n, expected \n%v", result, tt.expected)
+			}
+		})
+	}
+}
+
+// // Helper type for testing
+// type Point struct {
+// 	X, Y int
+// }
+
+// type Tetromino struct {
+// 	Points []Point
+// 	Letter rune
+// }
