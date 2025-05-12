@@ -142,7 +142,7 @@ func TestBoardToString(t *testing.T) {
 				b.place(t, 1, 1)
 				return b
 			}(),
-			"....\n.TT..\n.T...\n....",
+			"....\n.TTT\n..T.\n....",
 		},
 		{
 			"full row",
