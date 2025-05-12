@@ -105,7 +105,7 @@ func TestSolveTetrominos(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "impossible configuration",
+			name: "line configuration",
 			args: args{
 				tetrominos: []*Tetromino{
 					{
@@ -122,8 +122,8 @@ func TestSolveTetrominos(t *testing.T) {
 					},
 				},
 			},
-			want:    "",
-			wantErr: true,
+			want:    "AAAA\nBBBB\n....\n....",
+			wantErr: false,
 		},
 	}
 
