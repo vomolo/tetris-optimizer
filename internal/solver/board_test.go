@@ -169,12 +169,3 @@ func TestBoardToString(t *testing.T) {
 	}
 }
 
-// // Helper type for testing
-// type Point struct {
-// 	X, Y int
-// }
-
-// type Tetromino struct {
-// 	Points []Point
-// 	Letter rune
-// }
