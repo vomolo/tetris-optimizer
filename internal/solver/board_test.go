@@ -90,3 +90,32 @@ func TestCanPlace(t *testing.T) {
 	}
 }
 
+func TestPlaceAndRemove(t *testing.T) {
+	b := NewBoard(4, 4)
+	tetromino := &Tetromino{
+		Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+		Letter: 'B',
+	}
+
+	// Test place
+	b.place(tetromino, 0, 0)
+	if b.Placed != 1 {
+		t.Errorf("Expected Placed=1 after placing, got %d", b.Placed)
+	}
+	for _, p := range tetromino.Points {
+		if b.Grid[p.Y][p.X] != tetromino.Letter {
+			t.Errorf("Expected cell (%d,%d) to be '%c', got '%c'", p.X, p.Y, tetromino.Letter, b.Grid[p.Y][p.X])
+		}
+	}
+
+	// Test remove
+	b.remove(tetromino, 0, 0)
+	if b.Placed != 0 {
+		t.Errorf("Expected Placed=0 after removing, got %d", b.Placed)
+	}
+	for _, p := range tetromino.Points {
+		if b.Grid[p.Y][p.X] != 0 {
+			t.Errorf("Expected cell (%d,%d) to be empty after remove, got '%c'", p.X, p.Y, b.Grid[p.Y][p.X])
+		}
+	}
+}
