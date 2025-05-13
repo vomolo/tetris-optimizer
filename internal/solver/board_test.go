@@ -171,3 +171,39 @@ func TestPlaceAndRemove(t *testing.T) {
 		}
 	}
 }
+
+func TestPlaceRemoveMultiple(t *testing.T) {
+	b := NewBoard(6, 6)
+	tetromino1 := &Tetromino{
+		Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+		Letter: 'A',
+	}
+	tetromino2 := &Tetromino{
+		Points: []Point{{0, 0}, {1, 0}, {2, 0}, {1, 1}},
+		Letter: 'B',
+	}
+
+	// Place multiple tetrominos
+	b.place(tetromino1, 0, 0)
+	b.place(tetromino2, 3, 0)
+	if b.Placed != 2 {
+		t.Errorf("Expected Placed=2 after placing two tetrominos, got %d", b.Placed)
+	}
+
+	// Remove one tetromino
+	b.remove(tetromino1, 0, 0)
+	if b.Placed != 1 {
+		t.Errorf("Expected Placed=1 after removing one tetromino, got %d", b.Placed)
+	}
+	for _, p := range tetromino1.Points {
+		if b.Grid[p.Y][p.X] != 0 {
+			t.Errorf("Expected cell (%d,%d) to be empty after remove, got '%c'", p.X, p.Y, b.Grid[p.Y][p.X])
+		}
+	}
+
+	// Remove the second tetromino
+	b.remove(tetromino2, 3, 0)
+	if b.Placed != 0 {
+		t.Errorf("Expected Placed=0 after removing all tetrominos, got %d", b.Placed)
+	}
+}
