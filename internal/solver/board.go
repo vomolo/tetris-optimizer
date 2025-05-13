@@ -11,13 +11,8 @@ type Board struct {
 
 func NewBoard(width, height int) *Board {
 	if width <= 0 || height <= 0 {
-		return &Board{
-			Grid:   [][]rune{},
-			Width:  0,
-			Height: 0,
-		}
+		return nil
 	}
-
 	grid := make([][]rune, height)
 	for i := range grid {
 		grid[i] = make([]rune, width)
