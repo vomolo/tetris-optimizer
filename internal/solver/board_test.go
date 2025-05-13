@@ -41,3 +41,25 @@ func TestNewBoard(t *testing.T) {
 		})
 	}
 }
+
+func TestNewBoardInvalid(t *testing.T) {
+	tests := []struct {
+		name   string
+		width  int
+		height int
+	}{
+		{"zero width", 0, 4},
+		{"zero height", 4, 0},
+		{"negative width", -1, 4},
+		{"negative height", 4, -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := NewBoard(tt.width, tt.height)
+			if b != nil {
+				t.Errorf("Expected nil board for invalid dimensions %dx%d, got %+v", tt.width, tt.height, b)
+			}
+		})
+	}
+}
