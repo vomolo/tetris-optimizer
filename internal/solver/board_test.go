@@ -207,3 +207,83 @@ func TestPlaceRemoveMultiple(t *testing.T) {
 		t.Errorf("Expected Placed=0 after removing all tetrominos, got %d", b.Placed)
 	}
 }
+
+func TestBoardToString(t *testing.T) {
+	tests := []struct {
+		name     string
+		board    *Board
+		expected string
+	}{
+		{
+			"empty board",
+			NewBoard(3, 2),
+			"...\n...",
+		},
+		{
+			"partially filled",
+			func() *Board {
+				b := NewBoard(4, 4)
+				t := &Tetromino{
+					Points: []Point{{0, 0}, {1, 0}, {2, 0}, {1, 1}}, // T-shape
+					Letter: 'T',
+				}
+				b.place(t, 1, 1)
+				return b
+			}(),
+			"....\n.TTT\n..T.\n....",
+		},
+		{
+			"full row",
+			func() *Board {
+				b := NewBoard(3, 3)
+				t := &Tetromino{
+					Points: []Point{{0, 0}, {1, 0}, {2, 0}},
+					Letter: 'L',
+				}
+				b.place(t, 0, 1)
+				return b
+			}(),
+			"...\nLLL\n...",
+		},
+		{
+			"fully filled",
+			func() *Board {
+				b := NewBoard(2, 2)
+				t := &Tetromino{
+					Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+					Letter: 'F',
+				}
+				b.place(t, 0, 0)
+				return b
+			}(),
+			"FF\nFF",
+		},
+		{
+			"multiple tetrominos",
+			func() *Board {
+				b := NewBoard(5, 5)
+				t1 := &Tetromino{
+					Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+					Letter: 'A',
+				}
+				t2 := &Tetromino{
+					Points: []Point{{0, 0}, {1, 0}, {2, 0}, {1, 1}},
+					Letter: 'B',
+				}
+				b.place(t1, 0, 0)
+				b.place(t2, 2, 2)
+				return b
+			}(),
+			"AA...\nAA...\n..BBB\n...B.\n.....",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := boardToString(tt.board)
+			if result != tt.expected {
+				t.Errorf("boardToString() = \n%v\n, expected \n%v", result, tt.expected)
+			}
+		})
+	}
+}
