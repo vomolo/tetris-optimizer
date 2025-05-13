@@ -110,3 +110,34 @@ func TestCanPlace(t *testing.T) {
 		})
 	}
 }
+
+func TestCanPlacePartialOverlap(t *testing.T) {
+	b := NewBoard(5, 5)
+	tetromino1 := &Tetromino{
+		Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, // 2x2 square
+		Letter: 'A',
+	}
+	tetromino2 := &Tetromino{
+		Points: []Point{{0, 0}, {1, 0}, {2, 0}, {1, 1}}, // T-shape
+		Letter: 'B',
+	}
+
+	b.place(tetromino1, 1, 1)
+	tests := []struct {
+		name     string
+		x, y     int
+		expected bool
+	}{
+		{"partial overlap top-left", 0, 0, false},
+		{"partial overlap bottom-right", 2, 2, false},
+		{"no overlap", 3, 3, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if result := b.canPlace(tetromino2, tt.x, tt.y); result != tt.expected {
+				t.Errorf("canPlace(%d, %d) = %v, expected %v", tt.x, tt.y, result, tt.expected)
+			}
+		})
+	}
+}
