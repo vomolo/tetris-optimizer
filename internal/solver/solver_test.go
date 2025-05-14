@@ -176,3 +176,24 @@ func TestSolveWithoutRotationIrregularShapes(t *testing.T) {
 		t.Errorf("solveWithoutRotation() with irregular shapes failed")
 	}
 }
+
+func TestSolveTetrominosSortingImpact(t *testing.T) {
+	tetrominos := []*Tetromino{
+		createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
+		createTetromino('B', [][2]int{{0, 0}, {0, 1}, {0, 2}, {1, 2}}, 2, 3),
+	}
+	// Run with default order
+	result1, err1 := SolveTetrominos(tetrominos)
+	if err1 != nil {
+		t.Errorf("SolveTetrominos() with default order failed: %v", err1)
+	}
+	// Reverse order to simulate different sorting
+	tetrominos = []*Tetromino{tetrominos[1], tetrominos[0]}
+	result2, err2 := SolveTetrominos(tetrominos)
+	if err2 != nil {
+		t.Errorf("SolveTetrominos() with reversed order failed: %v", err2)
+	}
+	if result1 != result2 {
+		t.Errorf("SolveTetrominos() results differ with different sorting:\nresult1:\n%v\nresult2:\n%v", result1, result2)
+	}
+}
