@@ -95,3 +95,16 @@ func TestSolveTetrominos(t *testing.T) {
 		})
 	}
 }
+
+func TestSolveTetrominosMaxSize(t *testing.T) {
+	tetrominos := []*Tetromino{
+		createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
+		createTetromino('B', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
+		createTetromino('C', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
+		createTetromino('D', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
+	}
+	_, err := SolveTetrominos(tetrominos)
+	if err != nil {
+		t.Errorf("SolveTetrominos() with max size board failed: %v", err)
+	}
+}
