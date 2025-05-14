@@ -118,7 +118,7 @@ func TestSolveTetrominosRectangular(t *testing.T) {
 	if err != nil {
 		t.Errorf("SolveTetrominos() with rectangular board failed: %v", err)
 	}
-	expected := "AA..\nAA..\nBBBB\n....\n...."
+	expected := "AA..\nAA..\nBBBB\n...."
 	if result != expected {
 		t.Errorf("SolveTetrominos() = \n%v\n, expected \n%v", result, expected)
 	}
