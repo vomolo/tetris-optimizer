@@ -108,3 +108,18 @@ func TestSolveTetrominosMaxSize(t *testing.T) {
 		t.Errorf("SolveTetrominos() with max size board failed: %v", err)
 	}
 }
+
+func TestSolveTetrominosRectangular(t *testing.T) {
+	tetrominos := []*Tetromino{
+		createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
+		createTetromino('B', [][2]int{{0, 0}, {1, 0}, {2, 0}, {3, 0}}, 4, 1),
+	}
+	result, err := SolveTetrominos(tetrominos)
+	if err != nil {
+		t.Errorf("SolveTetrominos() with rectangular board failed: %v", err)
+	}
+	expected := "AA..\nAA..\nBBBB\n....\n...."
+	if result != expected {
+		t.Errorf("SolveTetrominos() = \n%v\n, expected \n%v", result, expected)
+	}
+}
