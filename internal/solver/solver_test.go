@@ -161,3 +161,18 @@ func TestSolveWithoutRotation(t *testing.T) {
 		})
 	}
 }
+
+func TestSolveWithoutRotationIrregularShapes(t *testing.T) {
+	tetrominos := []*Tetromino{
+		createTetromino('A', [][2]int{{1, 0}, {2, 0}, {0, 1}, {1, 1}}, 3, 2), // S-shape
+		createTetromino('B', [][2]int{{0, 0}, {1, 0}, {2, 0}, {1, 1}}, 3, 2), // T-shape
+	}
+	board := NewBoard(5, 5)
+	if board == nil {
+		t.Fatal("Failed to create board")
+	}
+	_, solved := solveWithoutRotation(tetrominos, 0, board)
+	if !solved {
+		t.Errorf("solveWithoutRotation() with irregular shapes failed")
+	}
+}
