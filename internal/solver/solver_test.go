@@ -123,3 +123,41 @@ func TestSolveTetrominosRectangular(t *testing.T) {
 		t.Errorf("SolveTetrominos() = \n%v\n, expected \n%v", result, expected)
 	}
 }
+
+func TestSolveWithoutRotation(t *testing.T) {
+	tests := []struct {
+		name       string
+		tetrominos []*Tetromino
+		index      int
+		wantSolved bool
+	}{
+		{
+			name:       "empty tetrominos",
+			tetrominos: []*Tetromino{},
+			index:      0,
+			wantSolved: true,
+		},
+		{
+			name: "single tetromino that fits",
+			tetrominos: []*Tetromino{
+				createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
+			},
+			index:      0,
+			wantSolved: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			board := NewBoard(4, 4)
+			if board == nil {
+				t.Fatal("Failed to create board")
+			}
+
+			_, solved := solveWithoutRotation(tt.tetrominos, tt.index, board)
+			if solved != tt.wantSolved {
+				t.Errorf("solveWithoutRotation() solved = %v, want %v", solved, tt.wantSolved)
+			}
+		})
+	}
+}
