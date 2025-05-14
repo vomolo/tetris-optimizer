@@ -63,6 +63,7 @@ func TestNewBoardInvalid(t *testing.T) {
 		})
 	}
 }
+
 func TestCanPlace(t *testing.T) {
 	b := NewBoard(4, 4)
 	tetromino := &Tetromino{
@@ -130,7 +131,7 @@ func TestCanPlacePartialOverlap(t *testing.T) {
 	}{
 		{"partial overlap top-left", 0, 0, false},
 		{"partial overlap bottom-right", 2, 2, false},
-		{"no overlap", 3, 3, true},
+		{"no overlap", 2, 0, true},
 	}
 
 	for _, tt := range tests {
