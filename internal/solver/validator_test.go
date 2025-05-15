@@ -59,6 +59,24 @@ func Test_validateAndSolveContent(t *testing.T) {
 			want:     "",
 			wantErr:  true,
 		},
+		{
+			name:     "trailing newlines",
+			filename: "trailing_newlines.txt",
+			want:     "AA\nAA",
+			wantErr:  false,
+		},
+		{
+			name:     "many tetrominos",
+			filename: "many_tetrominos.txt",
+			want:     "AABBCC\nAABBCC\nDDEEFF\nDDEEFF\nGGHHII\nGGHHII",
+			wantErr:  false,
+		},
+		{
+			name:     "single with empty lines",
+			filename: "single_with_empty.txt",
+			want:     "AA\nAA",
+			wantErr:  false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -92,7 +110,19 @@ func setupTestFilesForValidateAndSolve(t *testing.T) {
 		"disconnected.txt":       "#.#.\n....\n#.#.\n....\n",
 		"missing_newline.txt": "##..\n##..\n....\n...." +
 			"##..\n##..\n....\n....\n",
-		"empty.txt": "",
+		"empty.txt":             "",
+		"trailing_newlines.txt": "##..\n##..\n....\n....\n\n\n\n",
+		"many_tetrominos.txt": "##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n\n" +
+			"##..\n##..\n....\n....\n",
+		"single_with_empty.txt": "##..\n##..\n....\n....\n\n\n\n\n",
 	}
 
 	// Create test files
