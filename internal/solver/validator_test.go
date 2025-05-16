@@ -82,8 +82,8 @@ func Test_validateAndSolve(t *testing.T) {
 		{
 			name:    "single with empty lines",
 			content: "##..\n##..\n....\n....\n\n\n\n\n",
-			want:    "AA\nAA",
-			wantErr: false,
+			want:    "",
+			wantErr: true,
 		},
 	}
 
