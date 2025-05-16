@@ -62,8 +62,8 @@ func Test_validateAndSolveContent(t *testing.T) {
 		{
 			name:     "trailing newlines",
 			filename: "trailing_newlines.txt",
-			want:     "AA\nAA",
-			wantErr:  false,
+			want:     "",
+			wantErr:  true,
 		},
 		{
 			name:     "many tetrominos",
