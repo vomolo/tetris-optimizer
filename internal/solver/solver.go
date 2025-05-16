@@ -15,10 +15,6 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	}
 
 	minArea := len(tetrominos) * 4
-	minSize := 2
-	for minSize*minSize < minArea {
-		minSize++
-	}
 
 	originalOrder := make([]*Tetromino, len(tetrominos))
 	copy(originalOrder, tetrominos)
@@ -31,50 +27,36 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
 	}
 
-	for size := minSize; size <= min(maxBoardSize, minSize+5); size++ {
-		for _, sortFn := range sortStrategies {
-			sort.Slice(tetrominos, sortFn)
-			board := NewBoard(size, size)
-			if board == nil {
-				continue
-			}
-			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
-				return boardToString(solution), nil
-			}
-			copy(tetrominos, originalOrder)
-		}
-	}
+	type Dim struct{ W, H int }
 
-	var dimensions []struct{ width, height int }
-	for height := 2; height <= maxBoardSize; height++ {
-		for width := height + 1; width <= maxBoardSize; width++ {
-			if width*height >= minArea {
-				dimensions = append(dimensions, struct{ width, height int }{width, height})
+	var dimensions []Dim
+	for area := minArea; area <= maxBoardSize*maxBoardSize; area++ {
+		for w := 1; w <= maxBoardSize; w++ {
+			if area%w == 0 {
+				h := area / w
+				if h <= maxBoardSize {
+					dimensions = append(dimensions, Dim{w, h})
+				}
 			}
 		}
 	}
 
+	// Sort by minimal area, then by closeness to square
 	sort.Slice(dimensions, func(i, j int) bool {
-		ratioI := float64(dimensions[i].width) / float64(dimensions[i].height)
-		ratioJ := float64(dimensions[j].width) / float64(dimensions[j].height)
-		diffI := ratioI - 1.0
-		if diffI < 0 {
-			diffI = -diffI
+		ai := dimensions[i].W * dimensions[i].H
+		aj := dimensions[j].W * dimensions[j].H
+		if ai != aj {
+			return ai < aj
 		}
-		diffJ := ratioJ - 1.0
-		if diffJ < 0 {
-			diffJ = -diffJ
-		}
-		if diffI != diffJ {
-			return diffI < diffJ
-		}
-		return dimensions[i].width*dimensions[i].height < dimensions[j].width*dimensions[j].height
+		ri := float64(dimensions[i].W) / float64(dimensions[i].H)
+		rj := float64(dimensions[j].W) / float64(dimensions[j].H)
+		return abs(ri-1.0) < abs(rj-1.0)
 	})
 
 	for _, dim := range dimensions {
 		for _, sortFn := range sortStrategies {
 			sort.Slice(tetrominos, sortFn)
-			board := NewBoard(dim.width, dim.height)
+			board := NewBoard(dim.W, dim.H)
 			if board == nil {
 				continue
 			}
@@ -125,4 +107,11 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func abs(x float64) float64 {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
