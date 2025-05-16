@@ -1,10 +1,10 @@
 package solver
 
 import (
-	"bytes"
+
 	"fmt"
 	"os"
-	"path/filepath" // helps with file path manipulation for cross-platform compatibility
+	"path/filepath"
 	"strings"
 )
 
@@ -64,15 +64,18 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	if err != nil {
 		return "", newValidationError("ERROR")
 	}
+	return validateAndSolve(string(content))
+}
 
+func validateAndSolve(content string) (string, error) {
 	if len(content) < 16 {
 		return "", newValidationError("ERROR")
 	}
 
-	lines := bytes.Split(content, []byte{'\n'})
+	lines := strings.Split(content, "\n")
 	var (
 		lineCount    int
-		blockLines   [4][]byte
+		blockLines   [4]string
 		blockIndex   int
 		hasContent   bool
 		blockCounter int
@@ -81,7 +84,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 
 	for _, line := range lines {
 		lineCount++
-		trimmed := bytes.TrimSpace(line)
+		trimmed := strings.TrimSpace(line)
 
 		for _, char := range line {
 			if char != '#' && char != '.' && char != '\n' && char != '\r' && char != ' ' && char != '\t' {
@@ -93,8 +96,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 			if len(trimmed) > 0 {
 				return "", newValidationError("ERROR")
 			}
-
-			tetromino, err := validateAndCreateTetromino(blockLines[:], blockCounter)
+			tetromino, err := validateAndCreateTetrominoStr(blockLines[:], blockCounter)
 			if err != nil {
 				return "", err
 			}
@@ -104,10 +106,7 @@ func validateAndSolveContent(fullPath string) (string, error) {
 			continue
 		}
 
-		if len(trimmed) == 0 {
-			return "", newValidationError("ERROR")
-		}
-		if len(trimmed) != 4 {
+		if len(trimmed) == 0 || len(trimmed) != 4 {
 			return "", newValidationError("ERROR")
 		}
 
@@ -120,19 +119,25 @@ func validateAndSolveContent(fullPath string) (string, error) {
 	}
 
 	if blockIndex > 0 {
-		tetromino, err := validateAndCreateTetromino(blockLines[:blockIndex], blockCounter)
+		tetromino, err := validateAndCreateTetrominoStr(blockLines[:blockIndex], blockCounter)
 		if err != nil {
 			return "", err
 		}
 		tetrominos = append(tetrominos, tetromino)
 	}
 
-	if !hasContent {
-		return "", newValidationError("ERROR")
-	}
-	if lineCount < minLines {
+	if !hasContent || lineCount < minLines {
 		return "", newValidationError("ERROR")
 	}
 
 	return SolveTetrominos(tetrominos)
+}
+
+// Helper that mimics validateAndCreateTetromino but accepts []string instead of [][]byte
+func validateAndCreateTetrominoStr(lines []string, id int) (*Tetromino, error) {
+	byteLines := make([][]byte, len(lines))
+	for i, line := range lines {
+		byteLines[i] = []byte(line)
+	}
+	return validateAndCreateTetromino(byteLines, id)
 }
