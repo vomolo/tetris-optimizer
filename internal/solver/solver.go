@@ -41,17 +41,18 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		}
 	}
 
-	// Sort by minimal area, then by closeness to square
 	sort.Slice(dimensions, func(i, j int) bool {
-		ai := dimensions[i].W * dimensions[i].H
-		aj := dimensions[j].W * dimensions[j].H
-		if ai != aj {
-			return ai < aj
-		}
-		ri := float64(dimensions[i].W) / float64(dimensions[i].H)
-		rj := float64(dimensions[j].W) / float64(dimensions[j].H)
-		return abs(ri-1.0) < abs(rj-1.0)
-	})
+	ai := dimensions[i].W * dimensions[i].H
+	aj := dimensions[j].W * dimensions[j].H
+	if ai != aj {
+		return ai < aj // smaller area first
+	}
+	if dimensions[i].W != dimensions[j].W {
+		return dimensions[i].W > dimensions[j].W // wider boards first
+	}
+	return dimensions[i].H < dimensions[j].H // then shorter height if same width
+})
+
 
 	for _, dim := range dimensions {
 		for _, sortFn := range sortStrategies {
