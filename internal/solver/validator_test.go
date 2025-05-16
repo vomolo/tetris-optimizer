@@ -24,7 +24,7 @@ func Test_validateAndSolve(t *testing.T) {
 			content: "##..\n##..\n....\n....\n\n" +
 				"##..\n##..\n....\n....\n\n" +
 				"#...\n#...\n#...\n#...\n",
-			want:    "AAC.\nAAC.\nBBC.\nBBC.",
+			want:    "AAC\nAAC\nBBC\nBBC",
 			wantErr: false,
 		},
 		{
