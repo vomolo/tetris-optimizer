@@ -6,131 +6,123 @@ import (
 	"testing"
 )
 
-func Test_validateAndSolveContent(t *testing.T) {
-	// Setup test files
-	setupTestFilesForValidateAndSolve(t)
-	defer cleanupTestFiles(t)
-
+func Test_validateAndSolve(t *testing.T) {
 	tests := []struct {
-		name     string
-		filename string
-		want     string
-		wantErr  bool
+		name    string
+		content string
+		want    string
+		wantErr bool
 	}{
 		{
-			name:     "valid single square tetromino",
-			filename: "valid_single.txt",
-			want:     "AA\nAA",
-			wantErr:  false,
+			name:    "valid single square tetromino",
+			content: "##..\n##..\n....\n....\n",
+			want:    "AA\nAA",
+			wantErr: false,
 		},
 		{
-			name:     "valid multiple tetrominos",
-			filename: "valid_multiple.txt",
-			want:     "AAC.\nAAC.\nBBC.\nBBC.",
-			wantErr:  false,
+			name: "valid multiple tetrominos",
+			content: "##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"#...\n#...\n#...\n#...\n",
+			want:    "AAC.\nAAC.\nBBC.\nBBC.",
+			wantErr: false,
 		},
 		{
-			name:     "invalid file - incorrect block size",
-			filename: "invalid_block_size.txt",
-			want:     "",
-			wantErr:  true,
+			name:    "invalid block size",
+			content: "##.\n##.\n...\n...\n",
+			want:    "",
+			wantErr: true,
 		},
 		{
-			name:     "invalid file - invalid character",
-			filename: "invalid_char.txt",
-			want:     "",
-			wantErr:  true,
+			name:    "invalid character",
+			content: "##X.\n##..\n....\n....\n",
+			want:    "",
+			wantErr: true,
 		},
 		{
-			name:     "invalid file - disconnected tetromino",
-			filename: "disconnected.txt",
-			want:     "",
-			wantErr:  true,
+			name:    "disconnected tetromino",
+			content: "#.#.\n....\n#.#.\n....\n",
+			want:    "",
+			wantErr: true,
 		},
 		{
-			name:     "invalid file - missing newline between tetrominos",
-			filename: "missing_newline.txt",
-			want:     "",
-			wantErr:  true,
+			name:    "missing newline between tetrominos",
+			content: "##..\n##..\n....\n...." +
+				"##..\n##..\n....\n....\n",
+			want:    "",
+			wantErr: true,
 		},
 		{
-			name:     "empty file",
-			filename: "empty.txt",
-			want:     "",
-			wantErr:  true,
+			name:    "empty content",
+			content: "",
+			want:    "",
+			wantErr: true,
 		},
 		{
-			name:     "trailing newlines",
-			filename: "trailing_newlines.txt",
-			want:     "",
-			wantErr:  true,
+			name:    "trailing newlines",
+			content: "##..\n##..\n....\n....\n\n\n\n",
+			want:    "",
+			wantErr: true,
 		},
 		{
-			name:     "many tetrominos",
-			filename: "many_tetrominos.txt",
-			want:     "AABBCC\nAABBCC\nDDEEFF\nDDEEFF\nGGHHII\nGGHHII",
-			wantErr:  false,
+			name: "many tetrominos",
+			content: "##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n\n" +
+				"##..\n##..\n....\n....\n",
+			want:    "AABBCCDDEE\nAABBCCDDEE\nFFGGHHIIJJ\nFFGGHHIIJJ",
+			wantErr: false,
 		},
 		{
-			name:     "single with empty lines",
-			filename: "single_with_empty.txt",
-			want:     "AA\nAA",
-			wantErr:  false,
+			name:    "single with empty lines",
+			content: "##..\n##..\n....\n....\n\n\n\n\n",
+			want:    "AA\nAA",
+			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := validateAndSolveContent(filepath.Join("testfiles", tt.filename))
+			got, err := validateAndSolve(tt.content)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("validateAndSolveContent() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("validateAndSolve() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("validateAndSolveContent() =\n%v\nwant\n%v", got, tt.want)
+				t.Errorf("validateAndSolve() =\n%v\nwant\n%v", got, tt.want)
 			}
 		})
 	}
 }
 
+func Test_validateAndSolveContent_singleCase(t *testing.T) {
+	setupTestFilesForValidateAndSolve(t)
+	defer cleanupTestFiles(t)
+
+	want := "AA\nAA"
+	got, err := validateAndSolveContent(filepath.Join("testfiles", "valid_single.txt"))
+	if err != nil {
+		t.Errorf("validateAndSolveContent() unexpected error: %v", err)
+	}
+	if got != want {
+		t.Errorf("validateAndSolveContent() =\n%v\nwant\n%v", got, want)
+	}
+}
+
 func setupTestFilesForValidateAndSolve(t *testing.T) {
-	// Create testfiles directory if it doesn't exist
 	if err := os.MkdirAll("testfiles", 0755); err != nil {
 		t.Fatal("Failed to create test directory:", err)
 	}
-
-	// Define test files with proper formatting
-	testFiles := map[string]string{
-		"valid_single.txt": "##..\n##..\n....\n....\n",
-		"valid_multiple.txt": "##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"#...\n#...\n#...\n#...\n",
-		"invalid_block_size.txt": "##.\n##.\n...\n...\n",
-		"invalid_char.txt":       "##X.\n##..\n....\n....\n",
-		"disconnected.txt":       "#.#.\n....\n#.#.\n....\n",
-		"missing_newline.txt": "##..\n##..\n....\n...." +
-			"##..\n##..\n....\n....\n",
-		"empty.txt":             "",
-		"trailing_newlines.txt": "##..\n##..\n....\n....\n\n\n\n",
-		"many_tetrominos.txt": "##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n\n" +
-			"##..\n##..\n....\n....\n",
-		"single_with_empty.txt": "##..\n##..\n....\n....\n\n\n\n\n",
-	}
-
-	// Create test files
-	for filename, content := range testFiles {
-		path := filepath.Join("testfiles", filename)
-		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
-			t.Fatal("Failed to create test file:", err)
-		}
+	content := "##..\n##..\n....\n....\n"
+	path := filepath.Join("testfiles", "valid_single.txt")
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatal("Failed to create test file:", err)
 	}
 }
 
