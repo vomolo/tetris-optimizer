@@ -48,7 +48,7 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 			return ai < aj
 		}
 		if dimensions[i].W != dimensions[j].W {
-			return dimensions[i].W > dimensions[j].W
+			return dimensions[i].W < dimensions[j].W
 		}
 		return dimensions[i].H < dimensions[j].H
 	})
