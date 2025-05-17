@@ -2,11 +2,12 @@ package solver
 
 import (
 	"fmt"
+	"math"
 	"sort"
 )
 
 const (
-	maxBoardSize = 10
+	maxBoardSize = 16 // Increased to handle large inputs like 10 tetrominos
 )
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
@@ -15,57 +16,66 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	}
 
 	minArea := len(tetrominos) * 4
+	minSide := int(math.Ceil(math.Sqrt(float64(minArea))))
 
 	originalOrder := make([]*Tetromino, len(tetrominos))
 	copy(originalOrder, tetrominos)
 
-	sortStrategies := []func(i, j int) bool{
-		func(i, j int) bool {
-			return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height
-		},
-		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
-		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
+	// Single sorting strategy: largest area first
+	sortStrategy := func(i, j int) bool {
+		return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height
 	}
 
-	type Dim struct{ W, H int }
+	// Try square boards first
+	for side := minSide; side <= maxBoardSize; side++ {
+		sort.Slice(tetrominos, sortStrategy)
+		board := NewBoard(side, side)
+		if board == nil {
+			continue
+		}
+		if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
+			return boardToString(solution), nil
+		}
+		copy(tetrominos, originalOrder)
+	}
 
+	// Fallback to non-square boards
+	type Dim struct{ W, H int }
 	var dimensions []Dim
 	for area := minArea; area <= maxBoardSize*maxBoardSize; area++ {
 		for w := 1; w <= maxBoardSize; w++ {
 			if area%w == 0 {
 				h := area / w
-				if h <= maxBoardSize {
+				if h <= maxBoardSize && w != h { // Skip squares (already tried)
 					dimensions = append(dimensions, Dim{w, h})
 				}
 			}
 		}
 	}
 
+	// Sort dimensions by area (smallest first), then wider boards
 	sort.Slice(dimensions, func(i, j int) bool {
-	ai := dimensions[i].W * dimensions[i].H
-	aj := dimensions[j].W * dimensions[j].H
-	if ai != aj {
-		return ai < aj // smaller area first
-	}
-	if dimensions[i].W != dimensions[j].W {
-		return dimensions[i].W > dimensions[j].W // wider boards first
-	}
-	return dimensions[i].H < dimensions[j].H // then shorter height if same width
-})
-
+		ai := dimensions[i].W * dimensions[i].H
+		aj := dimensions[j].W * dimensions[j].H
+		if ai != aj {
+			return ai < aj
+		}
+		if dimensions[i].W != dimensions[j].W {
+			return dimensions[i].W > dimensions[j].W
+		}
+		return dimensions[i].H < dimensions[j].H
+	})
 
 	for _, dim := range dimensions {
-		for _, sortFn := range sortStrategies {
-			sort.Slice(tetrominos, sortFn)
-			board := NewBoard(dim.W, dim.H)
-			if board == nil {
-				continue
-			}
-			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
-				return boardToString(solution), nil
-			}
-			copy(tetrominos, originalOrder)
+		sort.Slice(tetrominos, sortStrategy)
+		board := NewBoard(dim.W, dim.H)
+		if board == nil {
+			continue
 		}
+		if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
+			return boardToString(solution), nil
+		}
+		copy(tetrominos, originalOrder)
 	}
 
 	return "", fmt.Errorf("ERROR")
@@ -108,11 +118,4 @@ func min(a, b int) int {
 		return a
 	}
 	return b
-}
-
-func abs(x float64) float64 {
-	if x < 0 {
-		return -x
-	}
-	return x
 }
