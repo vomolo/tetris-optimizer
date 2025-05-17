@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	maxBoardSize = 10
+	maxBoardSize = 20
 )
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
@@ -45,12 +45,12 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 		ai := dimensions[i].W * dimensions[i].H
 		aj := dimensions[j].W * dimensions[j].H
 		if ai != aj {
-			return ai < aj // smaller area first
+			return ai < aj
 		}
 		if dimensions[i].W != dimensions[j].W {
-			return dimensions[i].W > dimensions[j].W // wider boards first
+			return dimensions[i].W > dimensions[j].W
 		}
-		return dimensions[i].H < dimensions[j].H // then shorter height if same width
+		return dimensions[i].H < dimensions[j].H
 	})
 
 	for _, dim := range dimensions {
