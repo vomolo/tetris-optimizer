@@ -192,3 +192,60 @@ func areTetrominosEqual(t1, t2 *Tetromino) bool {
 	}
 	return true
 }
+
+func normalizeTetromino(t *Tetromino) []Point {
+	minX, minY := t.Points[0].X, t.Points[0].Y
+	for _, p := range t.Points[1:] {
+		if p.X < minX {
+			minX = p.X
+		}
+		if p.Y < minY {
+			minY = p.Y
+		}
+	}
+
+	normalized := make([]Point, len(t.Points))
+	for i, p := range t.Points {
+		normalized[i] = Point{p.X - minX, p.Y - minY}
+	}
+
+	sort.Slice(normalized, func(i, j int) bool {
+		if normalized[i].Y == normalized[j].Y {
+			return normalized[i].X < normalized[j].X
+		}
+		return normalized[i].Y < normalized[j].Y
+	})
+
+	return normalized
+}
+
+func calculateComplexity(t *Tetromino) int {
+	complexity := 0
+	for _, p := range t.Points {
+		neighbors := 0
+		for _, d := range []Point{{0, 1}, {0, -1}, {1, 0}, {-1, 0}} {
+			np := Point{p.X + d.X, p.Y + d.Y}
+			if containsPoint(t.Points, np) {
+				neighbors++
+			}
+		}
+		complexity += (4 - neighbors)
+	}
+	return complexity
+}
+
+func containsPoint(points []Point, p Point) bool {
+	for _, point := range points {
+		if point == p {
+			return true
+		}
+	}
+	return false
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
