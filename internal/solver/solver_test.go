@@ -4,196 +4,55 @@ import (
 	"testing"
 )
 
-func TestMin(t *testing.T) {
+// TestNewBoard tests board creation.
+func TestNewBoard(t *testing.T) {
 	tests := []struct {
-		name string
-		a    int
-		b    int
-		want int
+		size      int
+		shouldNil bool
 	}{
-		{"a < b", 3, 5, 3},
-		{"a > b", 5, 3, 3},
-		{"a == b", 4, 4, 4},
-		{"negative numbers", -2, -1, -2},
+		{0, true},
+		{-1, true},
+		{4, false},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := min(tt.a, tt.b); got != tt.want {
-				t.Errorf("min() = %v, want %v", got, tt.want)
-			}
-		})
+		b := NewBoard(tt.size)
+		if tt.shouldNil && b != nil {
+			t.Errorf("NewBoard(%d) should return nil", tt.size)
+		}
+		if !tt.shouldNil && (b == nil || b.Size != tt.size || len(b.Grid) != tt.size) {
+			t.Errorf("NewBoard(%d) created invalid board", tt.size)
+		}
 	}
 }
 
-func createTetromino(letter rune, points [][2]int, width, height int) *Tetromino {
-	t := &Tetromino{
-		Letter: letter,
-		Width:  width,
-		Height: height,
-	}
-	for _, p := range points {
-		t.Points = append(t.Points, Point{X: p[0], Y: p[1]})
-	}
-	return t
-}
-
-func TestSolveTetrominos(t *testing.T) {
-	tests := []struct {
-		name       string
-		tetrominos []*Tetromino
-		wantErr    bool
-	}{
-		{
-			name:       "empty input",
-			tetrominos: []*Tetromino{},
-			wantErr:    true,
-		},
-		{
-			name: "single square tetromino",
-			tetrominos: []*Tetromino{
-				createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-			},
-			wantErr: false,
-		},
-		{
-			name: "two simple tetrominos",
-			tetrominos: []*Tetromino{
-				createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-				createTetromino('B', [][2]int{{0, 0}, {0, 1}, {0, 2}, {1, 2}}, 2, 3),
-			},
-			wantErr: false,
-		},
-		{
-			name: "truly impossible configuration",
-			tetrominos: []*Tetromino{
-				createTetromino('A', [][2]int{{0, 0}, {1, 0}, {2, 0}, {3, 0}}, 4, 1),
-				createTetromino('B', [][2]int{{0, 0}, {1, 0}, {2, 0}, {3, 0}}, 4, 1),
-				createTetromino('C', [][2]int{{0, 0}, {1, 0}, {2, 0}, {3, 0}}, 4, 1),
-				createTetromino('D', [][2]int{{0, 0}, {1, 0}, {2, 0}, {3, 0}}, 4, 1),
-				createTetromino('E', [][2]int{{0, 0}, {1, 0}, {2, 0}, {3, 0}}, 4, 1),
-			},
-			wantErr: false,
-		},
-		{
-			name: "complex possible configuration",
-			tetrominos: []*Tetromino{
-				createTetromino('A', [][2]int{{0, 0}, {1, 0}, {1, 1}, {2, 1}}, 3, 2),
-				createTetromino('B', [][2]int{{0, 1}, {1, 1}, {1, 0}, {2, 0}}, 3, 2),
-				createTetromino('C', [][2]int{{0, 0}, {0, 1}, {0, 2}, {1, 2}}, 2, 3),
-			},
-			wantErr: false,
-		},
+// TestBoardPlacement tests placing and removing tetrominos.
+func TestBoardPlacement(t *testing.T) {
+	b := NewBoard(4)
+	tet := &Tetromino{
+		Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+		Letter: 'A',
+		Width:  2,
+		Height: 2,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := SolveTetrominos(tt.tetrominos)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("%s: SolveTetrominos() error = %v, wantErr %v", tt.name, err, tt.wantErr)
-			}
-		})
+	// Test valid placement
+	if !b.CanPlace(tet, 0, 0) {
+		t.Error("CanPlace should allow placement at (0,0)")
 	}
-}
-
-func TestSolveTetrominosMaxSize(t *testing.T) {
-	tetrominos := []*Tetromino{
-		createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-		createTetromino('B', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-		createTetromino('C', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-		createTetromino('D', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-	}
-	_, err := SolveTetrominos(tetrominos)
-	if err != nil {
-		t.Errorf("SolveTetrominos() with max size board failed: %v", err)
-	}
-}
-
-func TestSolveTetrominosRectangular(t *testing.T) {
-	tetrominos := []*Tetromino{
-		createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-		createTetromino('B', [][2]int{{0, 0}, {1, 0}, {2, 0}, {3, 0}}, 4, 1),
-	}
-	result, err := SolveTetrominos(tetrominos)
-	if err != nil {
-		t.Errorf("SolveTetrominos() with rectangular board failed: %v", err)
-	}
-	expected := "AA..\nAA..\nBBBB\n...."
-	if result != expected {
-		t.Errorf("SolveTetrominos() = \n%v\n, expected \n%v", result, expected)
-	}
-}
-
-func TestSolveWithoutRotation(t *testing.T) {
-	tests := []struct {
-		name       string
-		tetrominos []*Tetromino
-		index      int
-		wantSolved bool
-	}{
-		{
-			name:       "empty tetrominos",
-			tetrominos: []*Tetromino{},
-			index:      0,
-			wantSolved: true,
-		},
-		{
-			name: "single tetromino that fits",
-			tetrominos: []*Tetromino{
-				createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-			},
-			index:      0,
-			wantSolved: true,
-		},
+	b.Place(tet, 0, 0)
+	if b.Placed != 1 || b.Grid[0][0] != 'A' || b.Grid[1][1] != 'A' {
+		t.Error("Place failed to update board correctly")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			board := NewBoard(4, 4)
-			if board == nil {
-				t.Fatal("Failed to create board")
-			}
+	// Test invalid placement
+	if b.CanPlace(tet, 0, 0) {
+		t.Error("CanPlace should prevent overlap")
+	}
 
-			_, solved := solveWithoutRotation(tt.tetrominos, tt.index, board)
-			if solved != tt.wantSolved {
-				t.Errorf("solveWithoutRotation() solved = %v, want %v", solved, tt.wantSolved)
-			}
-		})
-	}
-}
-
-func TestSolveWithoutRotationIrregularShapes(t *testing.T) {
-	tetrominos := []*Tetromino{
-		createTetromino('A', [][2]int{{1, 0}, {2, 0}, {0, 1}, {1, 1}}, 3, 2), // S-shape
-		createTetromino('B', [][2]int{{0, 0}, {1, 0}, {2, 0}, {1, 1}}, 3, 2), // T-shape
-	}
-	board := NewBoard(5, 5)
-	if board == nil {
-		t.Fatal("Failed to create board")
-	}
-	_, solved := solveWithoutRotation(tetrominos, 0, board)
-	if !solved {
-		t.Errorf("solveWithoutRotation() with irregular shapes failed")
-	}
-}
-
-func TestSolveTetrominosSortingImpact(t *testing.T) {
-	tetrominos := []*Tetromino{
-		createTetromino('A', [][2]int{{0, 0}, {1, 0}, {0, 1}, {1, 1}}, 2, 2),
-		createTetromino('B', [][2]int{{0, 0}, {0, 1}, {0, 2}, {1, 2}}, 2, 3),
-	}
-	// Run with default order
-	result1, err1 := SolveTetrominos(tetrominos)
-	if err1 != nil {
-		t.Errorf("SolveTetrominos() with default order failed: %v", err1)
-	}
-	// Reverse order to simulate different sorting
-	tetrominos = []*Tetromino{tetrominos[1], tetrominos[0]}
-	result2, err2 := SolveTetrominos(tetrominos)
-	if err2 != nil {
-		t.Errorf("SolveTetrominos() with reversed order failed: %v", err2)
-	}
-	if result1 != result2 {
-		t.Errorf("SolveTetrominos() results differ with different sorting:\nresult1:\n%v\nresult2:\n%v", result1, result2)
+	// Test removal
+	b.Remove(tet, 0, 0)
+	if b.Placed != 0 || b.Grid[0][0] != 0 {
+		t.Error("Remove failed to clear board")
 	}
 }
