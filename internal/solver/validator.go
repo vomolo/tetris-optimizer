@@ -1,7 +1,10 @@
 package solver
 
 import (
+<<<<<<< HEAD
 	"bytes"
+=======
+>>>>>>> 6a47205 (REFINE: Simplify validation error handling and improve comments in validator)
 	"fmt"
 	"os"
 	"path/filepath" // helps with file path manipulation for cross-platform compatibility
@@ -13,8 +16,9 @@ const (
 	minLines  = 4
 )
 
+// Validate validates a Tetris input file and returns the solved board.
 func Validate(filename string) (string, error) {
-	// Clean the input path first
+	// Clean the input path
 	cleanFilename := filepath.Clean(filename)
 
 	// Get absolute path of the tetris directory
@@ -34,9 +38,9 @@ func Validate(filename string) (string, error) {
 		absFilePath = filepath.Join(absTetrisDir, cleanFilename)
 	}
 
-	// Verify the final path is still within our directory
+	// Prevent directory traversal
 	if !strings.HasPrefix(absFilePath, absTetrisDir+string(filepath.Separator)) {
-		return "", fmt.Errorf("invalid file path: attempted directory traversal")
+		return "", NewValidationError("invalid file path: attempted directory traversal")
 	}
 
 	if err := validateStructure(absFilePath); err != nil {
@@ -45,19 +49,21 @@ func Validate(filename string) (string, error) {
 	return validateAndSolveContent(absFilePath)
 }
 
+// validateStructure checks the file's structure (extension and existence).
 func validateStructure(fullPath string) error {
 	if filepath.Ext(fullPath) != ".txt" {
-		return newValidationError("File must have .txt extension")
+		return NewValidationError("file must have .txt extension")
 	}
 
 	if _, err := os.Stat(fullPath); err != nil {
 		if os.IsNotExist(err) {
-			return newValidationError("File does not exist in directory")
+			return NewValidationError("file does not exist in directory")
 		}
-		return newValidationError("File access error")
+		return NewValidationError("file access error")
 	}
 	return nil
 }
+<<<<<<< HEAD
 
 func validateAndSolveContent(fullPath string) (string, error) {
 	content, err := os.ReadFile(fullPath)
@@ -136,3 +142,5 @@ func validateAndSolveContent(fullPath string) (string, error) {
 
 	return SolveTetrominos(tetrominos)
 }
+=======
+>>>>>>> 6a47205 (REFINE: Simplify validation error handling and improve comments in validator)
