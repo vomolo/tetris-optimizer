@@ -3,6 +3,7 @@ package solver
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -177,6 +178,62 @@ func TestValidate(t *testing.T) {
 			}
 			if !tt.wantError && err != nil {
 				t.Errorf("Validate(%s) unexpected error: %v", tt.name, err)
+			}
+		})
+	}
+}
+
+// TestSolveTetrominos tests the solver.
+func TestSolveTetrominos(t *testing.T) {
+	// Create a square tetromino
+	square := &Tetromino{
+		Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+		Letter: 'A',
+		Width:  2,
+		Height: 2,
+	}
+
+	// Test with 12 identical square tetrominos
+	repetitive := make([]*Tetromino, 12)
+	for i := range repetitive {
+		repetitive[i] = &Tetromino{
+			Points: []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+			Letter: rune('A' + i),
+			Width:  2,
+			Height: 2,
+		}
+	}
+
+	tests := []struct {
+		name       string
+		tetrominos []*Tetromino
+		wantError  bool
+		wantSize   int
+	}{
+		{"single_square", []*Tetromino{square}, false, 2},
+		{"repetitive_squares", repetitive, false, 6}, // ceil(sqrt(12)) * 2 = 6
+		{"empty", []*Tetromino{}, true, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := SolveTetrominos(tt.tetrominos)
+			if tt.wantError && err == nil {
+				t.Errorf("SolveTetrominos(%s) expected error, got none", tt.name)
+			}
+			if !tt.wantError && err != nil {
+				t.Errorf("SolveTetrominos(%s) unexpected error: %v", tt.name, err)
+			}
+			if !tt.wantError {
+				lines := strings.Split(strings.TrimSpace(result), "\n")
+				if len(lines) != tt.wantSize {
+					t.Errorf("SolveTetrominos(%s) expected board size %d, got %d", tt.name, tt.wantSize, len(lines))
+				}
+				for _, line := range lines {
+					if len(line) != tt.wantSize {
+						t.Errorf("SolveTetrominos(%s) expected line length %d, got %d", tt.name, tt.wantSize, len(line))
+					}
+				}
 			}
 		})
 	}
