@@ -1,5 +1,7 @@
 package solver
 
+import "bytes"
+
 // Board represents the Tetris game board.
 type Board struct {
 	Grid   [][]rune
@@ -28,4 +30,38 @@ func (b *Board) CanPlace(t *Tetromino, x, y int) bool {
 		}
 	}
 	return true
+}
+
+// Place places a tetromino at position (x, y).
+func (b *Board) Place(t *Tetromino, x, y int) {
+	for _, p := range t.Points {
+		b.Grid[y+p.Y][x+p.X] = t.Letter
+	}
+	b.Placed++
+}
+
+// Remove removes a tetromino from position (x, y).
+func (b *Board) Remove(t *Tetromino, x, y int) {
+	for _, p := range t.Points {
+		b.Grid[y+p.Y][x+p.X] = 0
+	}
+	b.Placed--
+}
+
+// String converts the board to a string representation.
+func (b *Board) String() string {
+	var buf bytes.Buffer
+	for y := 0; y < b.Size; y++ {
+		for x := 0; x < b.Size; x++ {
+			if b.Grid[y][x] == 0 {
+				buf.WriteByte('.')
+			} else {
+				buf.WriteRune(b.Grid[y][x])
+			}
+		}
+		if y < b.Size-1 {
+			buf.WriteByte('\n')
+		}
+	}
+	return buf.String()
 }
