@@ -1,6 +1,8 @@
 package solver
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -112,5 +114,70 @@ func TestValidateAndCreateTetromino(t *testing.T) {
 				t.Errorf("Test %d: invalid tetromino created", i)
 			}
 		}
+	}
+}
+
+// 彼此: // TestValidate tests file validation.
+func TestValidate(t *testing.T) {
+	// Create temporary test files
+	tempDir := t.TempDir()
+	validContent := `##..
+##..
+....
+....
+
+##..
+.##.
+....
+....
+`
+	invalidContent := `##..  # Invalid character
+##..
+....
+....
+`
+	emptyContent := ""
+	tooShortContent := `##..
+##..
+....
+`
+
+	tests := []struct {
+		name      string
+		content   string
+		wantError bool
+	}{
+		{"valid", validContent, false},
+		{"invalid_char", invalidContent, true},
+		{"empty", emptyContent, true},
+		{"too_short", tooShortContent, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Write content to a temp file
+			filename := filepath.Join(tempDir, tt.name+".txt")
+			if err := os.WriteFile(filename, []byte(tt.content), 0644); err != nil {
+				t.Fatal(err)
+			}
+
+			// Move file to testfiles directory
+			testfilesDir := filepath.Join(tempDir, "testfiles")
+			if err := os.Mkdir(testfilesDir, 0755); err != nil {
+				t.Fatal(err)
+			}
+			dest := filepath.Join(testfilesDir, tt.name+".txt")
+			if err := os.Rename(filename, dest); err != nil {
+				t.Fatal(err)
+			}
+
+			_, err := Validate(tt.name + ".txt")
+			if tt.wantError && err == nil {
+				t.Errorf("Validate(%s) expected error, got none", tt.name)
+			}
+			if !tt.wantError && err != nil {
+				t.Errorf("Validate(%s) unexpected error: %v", tt.name, err)
+			}
+		})
 	}
 }
