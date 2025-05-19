@@ -210,4 +210,15 @@ func validateAndSolve(content string) (string, error) {
 >>>>>>> 6a47205 (REFINE: Simplify validation error handling and improve comments in validator)
 =======
 
+<<<<<<< HEAD
 >>>>>>> 0e51e2e (REFINE: Enhance validation logic for tetromino content and improve error handling)
+=======
+// validateAndCreateTetrominoStr converts string lines to a tetromino.
+func validateAndCreateTetrominoStr(lines []string, id int) (*Tetromino, error) {
+	byteLines := make([][]byte, len(lines))
+	for i, line := range lines {
+		byteLines[i] = []byte(line)
+	}
+	return ValidateAndCreateTetromino(byteLines, id)
+}
+>>>>>>> ea36d79 (REFINE: Add function to convert string lines to tetromino and improve input file structure)
