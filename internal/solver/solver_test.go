@@ -56,3 +56,61 @@ func TestBoardPlacement(t *testing.T) {
 		t.Error("Remove failed to clear board")
 	}
 }
+
+// TestValidateAndCreateTetromino tests tetromino creation.
+func TestValidateAndCreateTetromino(t *testing.T) {
+	tests := []struct {
+		block     [][]byte
+		wantError bool
+	}{
+		{ // Valid square tetromino
+			[][]byte{
+				[]byte("##.."),
+				[]byte("##.."),
+				[]byte("...."),
+				[]byte("...."),
+			},
+			false,
+		},
+		{ // Invalid: too many blocks
+			[][]byte{
+				[]byte("###."),
+				[]byte("##.."),
+				[]byte("...."),
+				[]byte("...."),
+			},
+			true,
+		},
+		{ // Invalid: not connected
+			[][]byte{
+				[]byte("#..."),
+				[]byte("...."),
+				[]byte("...."),
+				[]byte("#..#"),
+			},
+			true,
+		},
+		{ // Invalid: wrong size
+			[][]byte{
+				[]byte("##.."),
+				[]byte("##.."),
+			},
+			true,
+		},
+	}
+
+	for i, tt := range tests {
+		tet, err := ValidateAndCreateTetromino(tt.block, i)
+		if tt.wantError && err == nil {
+			t.Errorf("Test %d: expected error, got none", i)
+		}
+		if !tt.wantError && err != nil {
+			t.Errorf("Test %d: unexpected error: %v", i, err)
+		}
+		if !tt.wantError && tet != nil {
+			if len(tet.Points) != 4 || tet.Letter != rune('A'+i) {
+				t.Errorf("Test %d: invalid tetromino created", i)
+			}
+		}
+	}
+}
