@@ -108,3 +108,35 @@ func TestValidateAndCreateTetromino(t *testing.T) {
 		})
 	}
 }
+
+func TestIsValidTetromino(t *testing.T) {
+	tests := []struct {
+		name   string
+		points [4]Point
+		want   bool
+	}{
+		{
+			name:   "ValidSquare",
+			points: [4]Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+			want:   true,
+		},
+		{
+			name:   "Disconnected",
+			points: [4]Point{{0, 0}, {1, 0}, {0, 2}, {1, 2}},
+			want:   false,
+		},
+		{
+			name:   "DuplicatePoints",
+			points: [4]Point{{0, 0}, {0, 0}, {0, 1}, {1, 1}},
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isValidTetromino(tt.points); got != tt.want {
+				t.Errorf("isValidTetromino() = %v; want %v", got, tt.want)
+			}
+		})
+	}
+}
