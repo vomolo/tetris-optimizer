@@ -161,3 +161,50 @@ func TestGeneralSquareSolver(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupRepetitiveTetrominos(t *testing.T) {
+	tetromino1, err := createTestTetromino([]string{
+		"##..",
+		"##..",
+		"....",
+		"....",
+	}, 0)
+	if err != nil {
+		t.Fatalf("createTestTetromino failed: %v", err)
+	}
+	tetromino2, err := createTestTetromino([]string{
+		"#...",
+		"###.",
+		"....",
+		"....",
+	}, 1)
+	if err != nil {
+		t.Fatalf("createTestTetromino failed: %v", err)
+	}
+
+	tests := []struct {
+		name       string
+		tetrominos []*Tetromino
+		wantGroups int
+	}{
+		{
+			name:       "TwoIdentical",
+			tetrominos: []*Tetromino{tetromino1, tetromino1},
+			wantGroups: 1,
+		},
+		{
+			name:       "TwoDifferent",
+			tetrominos: []*Tetromino{tetromino1, tetromino2},
+			wantGroups: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			groups := groupRepetitiveTetrominos(tt.tetrominos)
+			if len(groups) != tt.wantGroups {
+				t.Errorf("groupRepetitiveTetrominos() len = %d; want %d", len(groups), tt.wantGroups)
+			}
+		})
+	}
+}
