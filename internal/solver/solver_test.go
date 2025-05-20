@@ -208,3 +208,50 @@ func TestGroupRepetitiveTetrominos(t *testing.T) {
 		})
 	}
 }
+
+func TestAreTetrominosEqual(t *testing.T) {
+	tetromino1, err := createTestTetromino([]string{
+		"##..",
+		"##..",
+		"....",
+		"....",
+	}, 0)
+	if err != nil {
+		t.Fatalf("createTestTetromino failed: %v", err)
+	}
+	tetromino2, err := createTestTetromino([]string{
+		"##..",
+		"##..",
+		"....",
+		"....",
+	}, 1)
+	if err != nil {
+		t.Fatalf("createTestTetromino failed: %v", err)
+	}
+	tetromino3, err := createTestTetromino([]string{
+		"#...",
+		"###.",
+		"....",
+		"....",
+	}, 2)
+	if err != nil {
+		t.Fatalf("createTestTetromino failed: %v", err)
+	}
+
+	tests := []struct {
+		name   string
+		t1, t2 *Tetromino
+		want   bool
+	}{
+		{"IdenticalTetrominos", tetromino1, tetromino2, true},
+		{"DifferentTetrominos", tetromino1, tetromino3, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := areTetrominosEqual(tt.t1, tt.t2); got != tt.want {
+				t.Errorf("areTetrominosEqual() = %v; want %v", got, tt.want)
+			}
+		})
+	}
+}
