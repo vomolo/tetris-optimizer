@@ -28,3 +28,24 @@ func TestNewBoard(t *testing.T) {
 		t.Error("Expected nil board for size 0")
 	}
 }
+
+func TestCanPlace(t *testing.T) {
+	board := NewBoard(4)
+	tetromino := makeTetromino('A', []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}}) // 2x2 block
+
+	// Valid placement
+	if !board.CanPlace(tetromino, 1, 1) {
+		t.Error("Expected valid placement at (1,1)")
+	}
+
+	// Out of bounds placement
+	if board.CanPlace(tetromino, 3, 3) {
+		t.Error("Expected invalid placement (out of bounds)")
+	}
+
+	// Overlap placement
+	board.Place(tetromino, 1, 1)
+	if board.CanPlace(tetromino, 1, 1) {
+		t.Error("Expected invalid placement (overlap)")
+	}
+}
