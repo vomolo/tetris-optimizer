@@ -76,3 +76,63 @@ func TestValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateAndSolve(t *testing.T) {
+	tests := []struct {
+		name        string
+		content     string
+		wantErr     bool
+		wantErrMsg  string
+		wantBoard   string
+	}{
+		{
+			name:      "ValidSingleTetromino",
+			content:   "##..\n##..\n....\n....",
+			wantBoard: "AA\nAA\n",
+		},
+		{
+			name:       "TooShort",
+			content:    "##..\n##..",
+			wantErr:    true,
+			wantErrMsg: "content too short",
+		},
+		{
+			name:       "InvalidCharacter",
+			content:    "#X..\n##..\n....\n....",
+			wantErr:    true,
+			wantErrMsg: "invalid character in input",
+		},
+		{
+			name:       "InvalidLineLength",
+			content:    "###\n##..\n....\n....",
+			wantErr:    true,
+			wantErrMsg: "each tetromino line must be 4 characters",
+		},
+		{
+			name:       "InvalidSeparator",
+			content:    "##..\n##..\n....\n....\n##..",
+			wantErr:    true,
+			wantErrMsg: "separator line must be empty",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := validateAndSolve(tt.content)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("validateAndSolve() error = nil; want %q", tt.wantErrMsg)
+				} else if err.Error() != tt.wantErrMsg {
+					t.Errorf("validateAndSolve() error = %q; want %q", err.Error(), tt.wantErrMsg)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("validateAndSolve() error = %v; want nil", err)
+			}
+			if !compareBoards(got, tt.wantBoard) {
+				t.Errorf("validateAndSolve() = %q; want %q", got, tt.wantBoard)
+			}
+		})
+	}
+}
