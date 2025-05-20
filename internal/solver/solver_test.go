@@ -109,3 +109,55 @@ func TestTryOptimizedSquareRepetitiveSolution(t *testing.T) {
 		})
 	}
 }
+
+func TestGeneralSquareSolver(t *testing.T) {
+	tetromino1, err := createTestTetromino([]string{
+		"##..",
+		"##..",
+		"....",
+		"....",
+	}, 0)
+	if err != nil {
+		t.Fatalf("createTestTetromino failed: %v", err)
+	}
+	tetromino2, err := createTestTetromino([]string{
+		"#...",
+		"###.",
+		"....",
+		"....",
+	}, 1)
+	if err != nil {
+		t.Fatalf("createTestTetromino failed: %v", err)
+	}
+
+	tests := []struct {
+		name       string
+		tetrominos []*Tetromino
+		wantBoard  string
+		wantErr    bool
+	}{
+		{
+			name:       "TwoDifferentTetrominos",
+			tetrominos: []*Tetromino{tetromino1, tetromino2},
+			wantBoard:  ".AA\nBAA\nBBB",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := generalSquareSolver(tt.tetrominos)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("generalSquareSolver() error = nil; want error")
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("generalSquareSolver() error = %v; want nil", err)
+			}
+			if !compareBoards(got, tt.wantBoard) {
+				t.Errorf("generalSquareSolver() = %q; want %q", got, tt.wantBoard)
+			}
+		})
+	}
+}
