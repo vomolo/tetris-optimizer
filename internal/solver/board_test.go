@@ -70,3 +70,22 @@ func TestPlaceAndRemove(t *testing.T) {
 		t.Errorf("Expected Placed = 0, got %d", board.Placed)
 	}
 }
+
+func TestString(t *testing.T) {
+	board := NewBoard(2)
+	tetromino := makeTetromino('C', []Point{{0, 0}})
+	board.Place(tetromino, 0, 0)
+
+	expected := "C.\n.."
+	got := board.String()
+
+	if got != expected {
+		t.Errorf("Expected board string:\n%s\nGot:\n%s", expected, got)
+	}
+
+	board.Remove(tetromino, 0, 0)
+	expectedEmpty := "..\n.."
+	if board.String() != expectedEmpty {
+		t.Errorf("Expected empty board:\n%s\nGot:\n%s", expectedEmpty, board.String())
+	}
+}
