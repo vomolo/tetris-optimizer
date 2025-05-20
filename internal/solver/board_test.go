@@ -49,3 +49,24 @@ func TestCanPlace(t *testing.T) {
 		t.Error("Expected invalid placement (overlap)")
 	}
 }
+
+func TestPlaceAndRemove(t *testing.T) {
+	board := NewBoard(4)
+	tetromino := makeTetromino('B', []Point{{0, 0}, {1, 0}, {0, 1}, {1, 1}})
+
+	board.Place(tetromino, 0, 0)
+	if board.Grid[0][0] != 'B' || board.Grid[1][1] != 'B' {
+		t.Error("Tetromino not placed correctly")
+	}
+	if board.Placed != 1 {
+		t.Errorf("Expected Placed = 1, got %d", board.Placed)
+	}
+
+	board.Remove(tetromino, 0, 0)
+	if board.Grid[0][0] != 0 || board.Grid[1][1] != 0 {
+		t.Error("Tetromino not removed correctly")
+	}
+	if board.Placed != 0 {
+		t.Errorf("Expected Placed = 0, got %d", board.Placed)
+	}
+}
