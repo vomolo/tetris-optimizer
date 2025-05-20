@@ -6,97 +6,84 @@ import (
 	"sort"
 )
 
-const (
-	maxBoardSize = 20
-)
+type ValidationError struct {
+	message string
+}
+
+func (e *ValidationError) Error() string {
+	return e.message
+}
+
+func NewValidationError(message string) error {
+	return &ValidationError{message: message}
+}
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	if len(tetrominos) == 0 {
 		return "", NewValidationError("no tetrominos provided")
 	}
 
-	minArea := len(tetrominos) * 4
-
-	originalOrder := make([]*Tetromino, len(tetrominos))
-	copy(originalOrder, tetrominos)
-
-	sortStrategies := []func(i, j int) bool{
-		func(i, j int) bool {
-			return tetrominos[i].Width*tetrominos[i].Height > tetrominos[j].Width*tetrominos[j].Height
-		},
-		func(i, j int) bool { return tetrominos[i].Height > tetrominos[j].Height },
-		func(i, j int) bool { return tetrominos[i].Width > tetrominos[j].Width },
+	// Assign unique letters to each tetromino
+	for i, t := range tetrominos {
+		t.Letter = rune('A' + i)
 	}
 
-	type Dim struct{ W, H int }
-
-	var dimensions []Dim
-	for area := minArea; area <= maxBoardSize*maxBoardSize; area++ {
-		for w := 1; w <= maxBoardSize; w++ {
-			if area%w == 0 {
-				h := area / w
-				if h <= maxBoardSize {
-					dimensions = append(dimensions, Dim{w, h})
-				}
-			}
-		}
+	// First try optimized solution for repetitive tetrominos
+	if solution, err := tryOptimizedSquareRepetitiveSolution(tetrominos); err == nil {
+		return solution, nil
 	}
 
-	sort.Slice(dimensions, func(i, j int) bool {
-		ai := dimensions[i].W * dimensions[i].H
-		aj := dimensions[j].W * dimensions[j].H
-		if ai != aj {
-			return ai < aj
-		}
-		if dimensions[i].W != dimensions[j].W {
-			return dimensions[i].W < dimensions[j].W
-		}
-		return dimensions[i].H < dimensions[j].H
-	})
-
-	for _, dim := range dimensions {
-		for _, sortFn := range sortStrategies {
-			sort.Slice(tetrominos, sortFn)
-			board := NewBoard(dim.W, dim.H)
-			if board == nil {
-				continue
-			}
-			if solution, solved := solveWithoutRotation(tetrominos, 0, board); solved {
-				return boardToString(solution), nil
-			}
-			copy(tetrominos, originalOrder)
-		}
-	}
-
-	return "", fmt.Errorf("ERROR")
+	// Fall back to general solver
+	return generalSquareSolver(tetrominos)
 }
 
-func solveWithoutRotation(tetrominos []*Tetromino, index int, board *Board) (*Board, bool) {
-	if index >= len(tetrominos) {
-		return board, true
+func tryOptimizedSquareRepetitiveSolution(tetrominos []*Tetromino) (string, error) {
+	groups := groupRepetitiveTetrominos(tetrominos)
+	if len(groups) != 1 || len(groups[0].tetrominos) < 5 {
+		return "", fmt.Errorf("not a repetitive case")
 	}
 
-	current := tetrominos[index]
-	if current == nil || board == nil {
-		return nil, false
-	}
+	t := groups[0].tetrominos[0]
+	n := len(tetrominos)
+	totalBlocks := n * 4
+	minSize := int(math.Ceil(math.Sqrt(float64(totalBlocks))))
 
-	maxY := board.Height - current.Height
-	maxX := board.Width - current.Width
+	// Try to find the smallest square that can fit all pieces
+	for size := minSize; size <= minSize+5; size++ {
+		// Calculate how many pieces fit in rows and columns
+		piecesPerRow := size / t.Width
+		piecesPerCol := size / t.Height
+		totalPieces := piecesPerRow * piecesPerCol
 
-	if maxY < 0 || maxX < 0 {
-		return nil, false
-	}
+		if totalPieces < n {
+			continue // Not enough space
+		}
 
-	for y := 0; y <= maxY; y++ {
-		for x := 0; x <= maxX; x++ {
-			if board.canPlace(current, x, y) {
-				board.place(current, x, y)
-				if solution, solved := solveWithoutRotation(tetrominos, index+1, board); solved {
-					return solution, true
+		board := NewBoard(size)
+		if board == nil {
+			continue
+		}
+
+		success := true
+		placed := 0
+		for row := 0; row < piecesPerCol && placed < n; row++ {
+			for col := 0; col < piecesPerRow && placed < n; col++ {
+				x := col * t.Width
+				y := row * t.Height
+				if !board.CanPlace(tetrominos[placed], x, y) {
+					success = false
+					break
 				}
-				board.remove(current, x, y)
+				board.Place(tetrominos[placed], x, y)
+				placed++
 			}
+			if !success {
+				break
+			}
+		}
+
+		if success && placed == n {
+			return board.String(), nil
 		}
 	}
 
