@@ -20,7 +20,7 @@ func NewValidationError(message string) error {
 
 func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 	if len(tetrominos) == 0 {
-		return "", NewValidationError("no tetrominos provided")
+		return "", NewValidationError("ERROR")
 	}
 
 	// Assign unique letters to each tetromino
@@ -40,7 +40,7 @@ func SolveTetrominos(tetrominos []*Tetromino) (string, error) {
 func tryOptimizedSquareRepetitiveSolution(tetrominos []*Tetromino) (string, error) {
 	groups := groupRepetitiveTetrominos(tetrominos)
 	if len(groups) != 1 || len(groups[0].tetrominos) < 5 {
-		return "", fmt.Errorf("not a repetitive case")
+		return "", fmt.Errorf("ERROR")
 	}
 
 	t := groups[0].tetrominos[0]
@@ -87,7 +87,7 @@ func tryOptimizedSquareRepetitiveSolution(tetrominos []*Tetromino) (string, erro
 		}
 	}
 
-	return "", fmt.Errorf("no optimized square solution found")
+	return "", fmt.Errorf("ERROR")
 }
 
 func generalSquareSolver(tetrominos []*Tetromino) (string, error) {
@@ -116,7 +116,7 @@ func generalSquareSolver(tetrominos []*Tetromino) (string, error) {
 			return board.String(), nil
 		}
 	}
-	return "", fmt.Errorf("no square solution found")
+	return "", fmt.Errorf("ERROR")
 }
 
 func solve(board *Board, tetrominos []*Tetromino, index int) bool {
