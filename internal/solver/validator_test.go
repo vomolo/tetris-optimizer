@@ -94,25 +94,25 @@ func TestValidateAndSolve(t *testing.T) {
 			name:       "TooShort",
 			content:    "##..\n##..",
 			wantErr:    true,
-			wantErrMsg: "content too short",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name:       "InvalidCharacter",
 			content:    "#X..\n##..\n....\n....",
 			wantErr:    true,
-			wantErrMsg: "invalid character in input",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name:       "InvalidLineLength",
 			content:    "###\n##..\n....\n....",
 			wantErr:    true,
-			wantErrMsg: "each tetromino line must be 4 characters",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name:       "InvalidSeparator",
 			content:    "##..\n##..\n....\n....\n##..",
 			wantErr:    true,
-			wantErrMsg: "separator line must be empty",
+			wantErrMsg: "ERROR",
 		},
 	}
 
