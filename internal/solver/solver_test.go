@@ -12,7 +12,7 @@ func TestSolveTetrominos(t *testing.T) {
 		"....",
 	}, 0)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 
 	tests := []struct {
@@ -26,7 +26,7 @@ func TestSolveTetrominos(t *testing.T) {
 			name:       "EmptyInput",
 			tetrominos: []*Tetromino{},
 			wantErr:    true,
-			wantErrMsg: "no tetrominos provided",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name:       "SingleSquareTetromino",
@@ -64,7 +64,7 @@ func TestTryOptimizedSquareRepetitiveSolution(t *testing.T) {
 		"....",
 	}, 0)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 
 	tests := []struct {
@@ -78,7 +78,7 @@ func TestTryOptimizedSquareRepetitiveSolution(t *testing.T) {
 			name:       "SingleTetromino",
 			tetrominos: []*Tetromino{tetromino},
 			wantErr:    true,
-			wantErrMsg: "not a repetitive case",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name: "FiveIdenticalTetrominos",
@@ -118,7 +118,7 @@ func TestGeneralSquareSolver(t *testing.T) {
 		"....",
 	}, 0)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 	tetromino2, err := createTestTetromino([]string{
 		"#...",
@@ -127,7 +127,7 @@ func TestGeneralSquareSolver(t *testing.T) {
 		"....",
 	}, 1)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 
 	tests := []struct {
@@ -170,7 +170,7 @@ func TestGroupRepetitiveTetrominos(t *testing.T) {
 		"....",
 	}, 0)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 	tetromino2, err := createTestTetromino([]string{
 		"#...",
@@ -179,7 +179,7 @@ func TestGroupRepetitiveTetrominos(t *testing.T) {
 		"....",
 	}, 1)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 
 	tests := []struct {
@@ -217,7 +217,7 @@ func TestAreTetrominosEqual(t *testing.T) {
 		"....",
 	}, 0)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 	tetromino2, err := createTestTetromino([]string{
 		"##..",
@@ -226,7 +226,7 @@ func TestAreTetrominosEqual(t *testing.T) {
 		"....",
 	}, 1)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 	tetromino3, err := createTestTetromino([]string{
 		"#...",
@@ -235,7 +235,7 @@ func TestAreTetrominosEqual(t *testing.T) {
 		"....",
 	}, 2)
 	if err != nil {
-		t.Fatalf("createTestTetromino failed: %v", err)
+		t.Fatalf("ERROR")
 	}
 
 	tests := []struct {
