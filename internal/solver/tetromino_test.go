@@ -34,7 +34,7 @@ func TestValidateAndCreateTetromino(t *testing.T) {
 				[]byte("##.."),
 			},
 			wantErr:    true,
-			wantErrMsg: "tetromino must have 4 rows",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name: "InvalidColumnCount",
@@ -45,7 +45,7 @@ func TestValidateAndCreateTetromino(t *testing.T) {
 				[]byte("...."),
 			},
 			wantErr:    true,
-			wantErrMsg: "tetromino row 0 must have 4 columns",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name: "TooManyBlocks",
@@ -56,7 +56,7 @@ func TestValidateAndCreateTetromino(t *testing.T) {
 				[]byte("...."),
 			},
 			wantErr:    true,
-			wantErrMsg: "tetromino has too many blocks",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name: "InvalidCharacter",
@@ -67,7 +67,7 @@ func TestValidateAndCreateTetromino(t *testing.T) {
 				[]byte("...."),
 			},
 			wantErr:    true,
-			wantErrMsg: "invalid character 'X' in tetromino",
+			wantErrMsg: "ERROR",
 		},
 		{
 			name: "DisconnectedTetromino",
@@ -78,7 +78,7 @@ func TestValidateAndCreateTetromino(t *testing.T) {
 				[]byte("...."),
 			},
 			wantErr:    true,
-			wantErrMsg: "tetromino must have exactly 4 blocks, got 3",
+			wantErrMsg: "ERROR",
 		},
 	}
 
