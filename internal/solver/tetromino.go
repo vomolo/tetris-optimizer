@@ -35,7 +35,7 @@ func ValidateAndCreateTetromino(block [][]byte, blockNumber int) (*Tetromino, er
 		}
 		for x, char := range line {
 			if char == '#' {
-				if hashCount >= 4 {
+				if hashCount == 4 {
 					return nil, fmt.Errorf("ERROR")
 				}
 				points[pointIdx] = Point{X: x, Y: y}
